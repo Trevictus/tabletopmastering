@@ -1,6 +1,6 @@
 /**
- * @fileoverview Índice de Stores Zustand
- * @description Exporta todos los stores de la aplicación
+ * @fileoverview Zustand Stores Index
+ * @description Exports all application stores
  * @module stores
  */
 

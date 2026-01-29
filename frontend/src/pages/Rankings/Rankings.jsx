@@ -12,7 +12,7 @@ import { isValidAvatar, capitalize } from '../../utils/validators';
 import styles from './Rankings.module.css';
 
 /**
- * Página de Rankings - Global y por grupo
+ * Rankings Page - Global and by group
  */
 
 const Rankings = () => {
@@ -25,12 +25,12 @@ const Rankings = () => {
   const [selectedGroupId, setSelectedGroupId] = useState(searchParams.get('group') || null);
   const [sortBy, setSortBy] = useState('points');
 
-  // Cargar grupos al montar
+  // Load groups on mount
   useEffect(() => {
     if (groups.length === 0) loadGroups();
   }, [groups.length, loadGroups]);
 
-  // Cargar ranking
+  // Load ranking
   const loadRanking = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -72,7 +72,7 @@ const Rankings = () => {
 
   useEffect(() => { loadRanking(); }, [loadRanking]);
 
-  // Ordenar ranking
+  // Sort ranking
   const sortedRanking = useMemo(() => {
     const sorted = [...ranking];
     if (sortBy === 'points') sorted.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
@@ -80,10 +80,10 @@ const Rankings = () => {
     return sorted;
   }, [ranking, sortBy]);
 
-  // Normalizar ID del usuario actual
+  // Normalize current user ID
   const currentUserId = user?._id?.toString?.() || user?._id || '';
 
-  // Top 20 + usuario actual si está fuera del top
+  // Top 20 + current user if outside top
   const { displayRanking, currentUserEntry } = useMemo(() => {
     const top20 = sortedRanking.slice(0, 20);
     const userIndex = sortedRanking.findIndex(p => {
@@ -98,7 +98,7 @@ const Rankings = () => {
     };
   }, [sortedRanking, currentUserId]);
 
-  // Info de vista actual
+  // Current view info
   const groupName = selectedGroupId 
     ? groups.find(g => g._id === selectedGroupId)?.name || 'Grupo'
     : 'Global';
@@ -120,7 +120,7 @@ const Rankings = () => {
         </Button>
       </div>
 
-      {/* Nav de grupos */}
+      {/* Group navigation */}
       <div className={styles.groupNav}>
         <button
           className={`${styles.navBtn} ${!selectedGroupId ? styles.active : ''}`}

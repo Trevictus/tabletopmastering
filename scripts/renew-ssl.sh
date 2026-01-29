@@ -1,12 +1,12 @@
 #!/bin/bash
 # ============================================
-# TABLETOP MASTERING - RENOVACIÓN DE CERTIFICADOS SSL
-# Ejecutado automáticamente por cron (2 veces al día)
+# TABLETOP MASTERING - SSL CERTIFICATE RENEWAL
+# Executed automatically by cron (twice daily)
 # ============================================
 
 set -e
 
-# Cargar configuración
+# Load configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/config.sh"
 
@@ -16,13 +16,13 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
 
-log "Verificando renovación de certificados..."
+log "Checking certificate renewal..."
 
-# Certbot ya maneja internamente si necesita renovar (< 30 días)
-# --deploy-hook solo se ejecuta si realmente se renovó
+# Certbot internally handles whether renewal is needed (< 30 days)
+# --deploy-hook only runs if actually renewed
 if certbot renew --quiet --deploy-hook "docker exec tabletop-nginx nginx -s reload 2>/dev/null || true"; then
-    log "Verificación completada"
+    log "Check completed"
 else
-    log "ERROR: Fallo en certbot renew"
+    log "ERROR: certbot renew failed"
     exit 1
 fi

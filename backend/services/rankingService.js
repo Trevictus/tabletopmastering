@@ -1,6 +1,6 @@
 /**
- * @fileoverview Servicio de Rankings
- * @description Lógica de rankings, estadísticas y puntuaciones de usuarios
+ * @fileoverview Ranking Service
+ * @description Logic for rankings, statistics and user scores
  * @module services/rankingService
  * @requires ../models/User
  * @requires ./pointsCalculator
@@ -10,12 +10,12 @@ const User = require('../models/User');
 const pointsCalculator = require('./pointsCalculator');
 
 /**
- * Servicio para manejar ranking y estadísticas de usuarios
- * Optimizado con lean(), projections y consultas eficientes
+ * Service for handling user ranking and statistics
+ * Optimized with lean(), projections and efficient queries
  */
 
 /**
- * Proyección para datos de ranking
+ * Projection for ranking data
  */
 const RANKING_USER_PROJECTION = {
   nickname: 1,
@@ -25,11 +25,11 @@ const RANKING_USER_PROJECTION = {
 };
 
 /**
- * Actualiza los puntos de un usuario (usando findByIdAndUpdate atómico)
- * @param {string} userId - ID del usuario
- * @param {number} pointsEarned - Puntos ganados
- * @param {boolean} isWinner - Si fue ganador
- * @returns {object} Usuario actualizado
+ * Updates a user's points (using atomic findByIdAndUpdate)
+ * @param {string} userId - User ID
+ * @param {number} pointsEarned - Points earned
+ * @param {boolean} isWinner - If was winner
+ * @returns {object} Updated user
  */
 const updateUserPoints = async (userId, pointsEarned, isWinner = false) => {
   const updateOps = {
@@ -57,9 +57,9 @@ const updateUserPoints = async (userId, pointsEarned, isWinner = false) => {
 };
 
 /**
- * Actualiza estadísticas de todos los jugadores en una partida
- * @param {object} match - Documento de Match con jugadores y ganador
- * @returns {object} Reporte de actualización
+ * Updates statistics for all players in a match
+ * @param {object} match - Match document with players and winner
+ * @returns {object} Update report
  */
 const updateMatchStatistics = async (match) => {
   const report = {
@@ -68,10 +68,10 @@ const updateMatchStatistics = async (match) => {
     errors: [],
   };
 
-  // Calcular puntos para cada jugador
+  // Calculate points for each player
   const pointsData = pointsCalculator.calculatePointsForAllPlayers(match.players);
 
-  // Actualizar cada jugador
+  // Update each player
   for (const data of pointsData) {
     try {
       const isWinner = match.winner && match.winner.toString() === data.userId.toString();
@@ -95,9 +95,9 @@ const updateMatchStatistics = async (match) => {
 };
 
 /**
- * Obtiene el ranking de un grupo (optimizado con lean y projection)
- * @param {string} groupId - ID del grupo
- * @returns {Array} Array de usuarios ordenados por puntos
+ * Gets the ranking of a group (optimized with lean and projection)
+ * @param {string} groupId - Group ID
+ * @returns {Array} Array of users sorted by points
  */
 const getGroupRanking = async (groupId) => {
   const users = await User.find({
@@ -123,8 +123,8 @@ const getGroupRanking = async (groupId) => {
 };
 
 /**
- * Obtiene el ranking global de todos los usuarios (optimizado con lean y projection)
- * @returns {Array} Array de usuarios ordenados por puntos
+ * Gets the global ranking of all users (optimized with lean and projection)
+ * @returns {Array} Array of users sorted by points
  */
 const getGlobalRanking = async () => {
   const users = await User.find({ isActive: true })

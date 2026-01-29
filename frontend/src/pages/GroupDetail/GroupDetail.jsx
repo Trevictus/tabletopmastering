@@ -64,7 +64,7 @@ const GroupAvatar = ({ group, isAdmin, onAvatarChange }) => {
         const compressedImage = await compressImage(file);
         onAvatarChange(compressedImage);
       } catch {
-        // Error silencioso
+        // Silent error
       }
     }
   };
@@ -203,7 +203,7 @@ const GroupDetail = () => {
       setCopiedCode(true);
       toastRef.current.success('Código copiado al portapapeles');
     } catch {
-      // Fallback para navegadores sin soporte de clipboard API
+      // Fallback for browsers without clipboard API support
       const textArea = document.createElement('textarea');
       textArea.value = group.inviteCode;
       textArea.style.position = 'fixed';
@@ -239,7 +239,7 @@ const GroupDetail = () => {
     try {
       await groupService.removeMember(id, memberId);
       toastRef.current.success(`${memberName} eliminado del grupo`);
-      // Recargar grupo
+      // Reload group
       const response = await groupService.getGroupById(id);
       setGroup(response.data);
     } catch (err) {
@@ -275,12 +275,12 @@ const GroupDetail = () => {
     );
   }
 
-  // Determinar si el usuario actual es admin
+  // Determine if current user is admin
   const adminUser = group.admin;
   const isAdmin = user?._id === adminUser?._id || user?._id === group.createdBy;
   const memberCount = (group.members?.length || 0);
 
-  // Función helper para formatear fecha de unión
+  // Helper function to format join date
   const formatJoinDate = (date) => {
     if (!date) return '';
     return new Date(date).toLocaleDateString('es-ES', {

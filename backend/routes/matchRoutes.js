@@ -24,11 +24,11 @@ const {
 
 const router = express.Router();
 
-// Rutas de ranking
+// Ranking routes
 router.get('/ranking/global', protect, getGlobalRanking);
 router.get('/ranking/group/:groupId', protect, getGroupRanking);
 
-// Rutas protegidas
+// Protected routes
 router.post('/', protect, createMatch);
 router.get('/', protect, getMatches);
 router.get('/:id', protect, getMatch);

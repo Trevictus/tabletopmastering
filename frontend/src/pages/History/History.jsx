@@ -13,7 +13,7 @@ const History = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
-  // Refrescar datos del usuario al montar
+  // Refresh user data on mount
   useEffect(() => {
     refreshUser();
   }, [refreshUser]);
@@ -22,7 +22,7 @@ const History = () => {
     if (!user) return;
     const load = async () => {
       try {
-        // Cargar todas las partidas y filtrar las finalizadas
+        // Load all matches and filter the finalized ones
         const response = await matchService.getAllUserMatches({ limit: 100 });
         const finalized = (response.data || []).filter(m => m.status === 'finalizada');
         const sorted = finalized.sort((a, b) => 
@@ -41,7 +41,7 @@ const History = () => {
   const { stats, filtered } = useMemo(() => {
     const currentUserId = user?._id?.toString();
     
-    // Buscar si el usuario ganó (es el winner o tiene posición 1)
+    // Check if user won (is the winner or has position 1)
     const isWinner = (match) => {
       const winnerId = match.winner?._id?.toString() || match.winner?.toString();
       if (winnerId === currentUserId) return true;

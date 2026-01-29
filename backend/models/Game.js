@@ -1,6 +1,6 @@
 /**
- * @fileoverview Modelo de Juego
- * @description Define el esquema de juegos de mesa (personalizados o de BGG)
+ * @fileoverview Game Model
+ * @description Defines the board game schema (custom or from BGG)
  * @module models/Game
  * @requires mongoose
  */
@@ -8,14 +8,14 @@
 const mongoose = require('mongoose');
 
 /**
- * Esquema de Juego
+ * Game Schema
  * @typedef {Object} Game
- * @property {string} name - Nombre del juego
- * @property {string} description - Descripción
- * @property {number} minPlayers - Mínimo de jugadores
- * @property {number} maxPlayers - Máximo de jugadores
- * @property {string} source - Origen (bgg/custom)
- * @property {number} bggId - ID en BoardGameGeek
+ * @property {string} name - Game name
+ * @property {string} description - Description
+ * @property {number} minPlayers - Minimum players
+ * @property {number} maxPlayers - Maximum players
+ * @property {string} source - Source (bgg/custom)
+ * @property {number} bggId - BoardGameGeek ID
  */
 const gameSchema = new mongoose.Schema(
   {
@@ -82,10 +82,10 @@ const gameSchema = new mongoose.Schema(
     ],
     difficulty: {
       type: String,
-      enum: ['fácil', 'medio', 'difícil', 'experto', ''],
+      enum: ['easy', 'medium', 'hard', 'expert', ''],
       default: '',
     },
-    // Campos específicos de BGG
+    // BGG-specific fields
     source: {
       type: String,
       enum: ['bgg', 'custom'],
@@ -130,7 +130,7 @@ const gameSchema = new mongoose.Schema(
         default: 0,
       },
     },
-    // Campo group opcional (solo para juegos en grupos)
+    // Optional group field (only for games in groups)
     group: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Group',
@@ -150,11 +150,11 @@ const gameSchema = new mongoose.Schema(
         type: Date,
       },
     },
-    // Metadatos de sincronización con BGG
+    // BGG synchronization metadata
     bggLastSync: {
       type: Date,
     },
-    // Campos personalizables por el usuario
+    // User customizable fields
     customNotes: {
       type: String,
       maxlength: [500, 'Las notas no pueden exceder 500 caracteres'],
@@ -170,19 +170,19 @@ const gameSchema = new mongoose.Schema(
   }
 );
 
-// Índices para búsquedas más eficientes
-gameSchema.index({ name: 'text', description: 'text' });  // Búsqueda de texto completo
-gameSchema.index({ group: 1, name: 1 });  // Juegos por grupo ordenados por nombre
-gameSchema.index({ group: 1, isActive: 1, createdAt: -1 });  // Juegos activos de grupo por fecha
-gameSchema.index({ bggId: 1 }, { sparse: true });  // Búsqueda por ID de BGG (sparse para nulls)
-gameSchema.index({ source: 1, isActive: 1 });  // Filtrar por fuente
-gameSchema.index({ 'rating.average': -1, isActive: 1 });  // Top rated juegos activos
-gameSchema.index({ addedBy: 1, group: 1, isActive: 1 });  // Juegos personales vs grupo
-gameSchema.index({ 'stats.timesPlayed': -1, isActive: 1 });  // Juegos más jugados
-gameSchema.index({ categories: 1 });  // Filtrar por categoría
-gameSchema.index({ minPlayers: 1, maxPlayers: 1 });  // Filtrar por número de jugadores
+// Indexes for more efficient searches
+gameSchema.index({ name: 'text', description: 'text' });  // Full text search
+gameSchema.index({ group: 1, name: 1 });  // Games by group ordered by name
+gameSchema.index({ group: 1, isActive: 1, createdAt: -1 });  // Active group games by date
+gameSchema.index({ bggId: 1 }, { sparse: true });  // Search by BGG ID (sparse for nulls)
+gameSchema.index({ source: 1, isActive: 1 });  // Filter by source
+gameSchema.index({ 'rating.average': -1, isActive: 1 });  // Top rated active games
+gameSchema.index({ addedBy: 1, group: 1, isActive: 1 });  // Personal vs group games
+gameSchema.index({ 'stats.timesPlayed': -1, isActive: 1 });  // Most played games
+gameSchema.index({ categories: 1 });  // Filter by category
+gameSchema.index({ minPlayers: 1, maxPlayers: 1 });  // Filter by player count
 
-// Método para verificar si necesita actualización desde BGG (30 días)
+// Method to check if BGG update is needed (30 days)
 gameSchema.methods.needsBGGUpdate = function() {
   if (this.source !== 'bgg') return false;
   if (!this.bggLastSync) return true;
@@ -193,18 +193,18 @@ gameSchema.methods.needsBGGUpdate = function() {
   return this.bggLastSync < thirtyDaysAgo;
 };
 
-// Virtual para obtener el tiempo de juego formateado
+// Virtual to get formatted playing time
 gameSchema.virtual('playingTimeFormatted').get(function() {
   if (this.minPlayTime && this.maxPlayTime) {
-    return `${this.minPlayTime}-${this.maxPlayTime} minutos`;
+    return `${this.minPlayTime}-${this.maxPlayTime} minutes`;
   }
   if (this.playingTime) {
-    return `${this.playingTime} minutos`;
+    return `${this.playingTime} minutes`;
   }
-  return 'No especificado';
+  return 'Not specified';
 });
 
-// Asegurar que los virtuals se incluyan en JSON
+// Ensure virtuals are included in JSON
 gameSchema.set('toJSON', { virtuals: true });
 gameSchema.set('toObject', { virtuals: true });
 

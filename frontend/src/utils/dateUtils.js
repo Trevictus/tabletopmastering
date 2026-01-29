@@ -1,13 +1,13 @@
 /**
- * @fileoverview Utilidades de Fechas
- * @description Funciones para formateo y manipulación de fechas
+ * @fileoverview Date Utilities
+ * @description Functions for date formatting and manipulation
  * @module utils/dateUtils
  */
 
 /**
- * Formatea una fecha en formato legible
- * @param {string|Date} date - Fecha a formatear
- * @returns {string} Fecha formateada
+ * Formats a date in readable format
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted date
  */
 export const formatDate = (date) => {
   if (!date) return '';
@@ -22,9 +22,9 @@ export const formatDate = (date) => {
 };
 
 /**
- * Formatea una fecha con hora
- * @param {string|Date} date - Fecha a formatear
- * @returns {string} Fecha y hora formateada
+ * Formats a date with time
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted date and time
  */
 export const formatDateTime = (date) => {
   if (!date) return '';

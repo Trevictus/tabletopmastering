@@ -1,6 +1,6 @@
 /**
- * @fileoverview Servicio de Autenticación
- * @description Operaciones de registro, login, logout y gestión de sesión
+ * @fileoverview Authentication Service
+ * @description Registration, login, logout and session management operations
  * @module services/authService
  */
 
@@ -8,17 +8,17 @@ import api from './api';
 import { STORAGE_KEYS } from '../constants/auth';
 
 /**
- * Servicio de autenticación
- * Gestiona todas las operaciones relacionadas con autenticación y persistencia de usuario
+ * Authentication service
+ * Manages all authentication-related operations and user persistence
  * 
- * IMPORTANTE: Usamos sessionStorage en lugar de localStorage para aislar sesiones por pestaña.
- * Esto permite que diferentes usuarios inicien sesión en diferentes pestañas del mismo navegador.
+ * IMPORTANT: We use sessionStorage instead of localStorage to isolate sessions per tab.
+ * This allows different users to log in on different tabs of the same browser.
  */
 const authService = {
   /**
-   * Registra un nuevo usuario
-   * @param {Object} userData - Datos del usuario (name, email, password)
-   * @returns {Promise<Object>} Datos del usuario y token
+   * Registers a new user
+   * @param {Object} userData - User data (name, email, password)
+   * @returns {Promise<Object>} User data and token
    */
   register: async (userData) => {
     const response = await api.post('/auth/register', userData);
@@ -30,9 +30,9 @@ const authService = {
   },
 
   /**
-   * Inicia sesión
-   * @param {Object} credentials - Email y contraseña
-   * @returns {Promise<Object>} Datos del usuario y token
+   * Logs in a user
+   * @param {Object} credentials - Email and password
+   * @returns {Promise<Object>} User data and token
    */
   login: async (credentials) => {
     const response = await api.post('/auth/login', credentials);
@@ -44,8 +44,8 @@ const authService = {
   },
 
   /**
-   * Cierra sesión
-   * Limpia token y datos de usuario del sessionStorage
+   * Logs out the user
+   * Clears token and user data from sessionStorage
    */
   logout: () => {
     sessionStorage.removeItem(STORAGE_KEYS.TOKEN);
@@ -54,13 +54,13 @@ const authService = {
   },
 
   /**
-   * Obtiene el perfil del usuario autenticado desde el backend
-   * Valida que el token sea válido
-   * @returns {Promise<Object>} Datos del usuario actualizado
+   * Gets the authenticated user's profile from the backend
+   * Validates that the token is valid
+   * @returns {Promise<Object>} Updated user data
    */
   getProfile: async () => {
     const response = await api.get('/auth/me');
-    // Backend devuelve { success, data: user }
+    // Backend returns { success, data: user }
     const user = response.data.data || response.data.user;
     if (user) {
       sessionStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
@@ -69,23 +69,23 @@ const authService = {
   },
 
   /**
-   * Actualiza el perfil del usuario
-   * @param {Object} profileData - Datos a actualizar
-   * @returns {Promise<Object>} Usuario actualizado
+   * Updates the user's profile
+   * @param {Object} profileData - Data to update
+   * @returns {Promise<Object>} Updated user
    */
   updateProfile: async (profileData) => {
     const response = await api.put('/auth/profile', profileData);
-    // Backend devuelve { success, message, data: { user } }
+    // Backend returns { success, message, data: { user } }
     if (response.data.data?.user) {
       sessionStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data.data.user));
-      return response.data.data; // Devolver { user }
+      return response.data.data; // Return { user }
     }
     return response.data;
   },
 
   /**
-   * Sincroniza los datos del usuario en sessionStorage
-   * @param {Object} userData - Datos actualizados del usuario
+   * Syncs user data in sessionStorage
+   * @param {Object} userData - Updated user data
    */
   syncUserData: (userData) => {
     if (userData) {
@@ -94,8 +94,8 @@ const authService = {
   },
 
   /**
-   * Verifica si existe un token de autenticación
-   * @returns {boolean} True si hay token
+   * Checks if an authentication token exists
+   * @returns {boolean} True if token exists
    */
   isAuthenticated: () => {
     const token = sessionStorage.getItem(STORAGE_KEYS.TOKEN);
@@ -103,32 +103,32 @@ const authService = {
   },
 
   /**
-   * Obtiene el usuario del sessionStorage
-   * NOTA: Estos datos pueden estar desactualizados, usar getProfile() para datos frescos
-   * @returns {Object|null} Usuario o null
+   * Gets the user from sessionStorage
+   * NOTE: This data may be outdated, use getProfile() for fresh data
+   * @returns {Object|null} User or null
    */
   getCurrentUser: () => {
     try {
       const user = sessionStorage.getItem(STORAGE_KEYS.USER);
       return user ? JSON.parse(user) : null;
     } catch (error) {
-      console.error('Error al parsear usuario de sessionStorage:', error);
+      console.error('Error parsing user from sessionStorage:', error);
       return null;
     }
   },
 
   /**
-   * Obtiene el token actual
-   * @returns {string|null} Token de autenticación
+   * Gets the current token
+   * @returns {string|null} Authentication token
    */
   getToken: () => {
     return sessionStorage.getItem(STORAGE_KEYS.TOKEN);
   },
 
   /**
-   * Verifica disponibilidad de nickname
-   * @param {string} nickname - Nickname a verificar
-   * @param {string} userId - ID del usuario actual (para excluirlo al editar perfil)
+   * Checks nickname availability
+   * @param {string} nickname - Nickname to check
+   * @param {string} userId - Current user ID (to exclude when editing profile)
    * @returns {Promise<Object>} { available, message, suggestions? }
    */
   checkNickname: async (nickname, userId = null) => {
@@ -138,15 +138,15 @@ const authService = {
     } catch (error) {
       return {
         available: false,
-        message: error.response?.data?.message || 'Error al verificar',
+        message: error.response?.data?.message || 'Error checking',
       };
     }
   },
 
   /**
-   * Verifica disponibilidad de email
-   * @param {string} email - Email a verificar
-   * @param {string} userId - ID del usuario actual (para excluirlo al editar perfil)
+   * Checks email availability
+   * @param {string} email - Email to check
+   * @param {string} userId - Current user ID (to exclude when editing profile)
    * @returns {Promise<Object>} { available, message }
    */
   checkEmail: async (email, userId = null) => {
@@ -156,14 +156,14 @@ const authService = {
     } catch (error) {
       return {
         available: false,
-        message: error.response?.data?.message || 'Error al verificar',
+        message: error.response?.data?.message || 'Error checking',
       };
     }
   },
 
   /**
-   * Exportar todos los datos del usuario (RGPD)
-   * @returns {Promise<Object>} Datos exportados del usuario
+   * Export all user data (GDPR)
+   * @returns {Promise<Object>} Exported user data
    */
   exportUserData: async () => {
     const response = await api.get('/auth/export-data');
@@ -171,9 +171,9 @@ const authService = {
   },
 
   /**
-   * Eliminar cuenta y todos los datos (RGPD)
-   * @param {string} password - Contraseña para confirmar
-   * @returns {Promise<Object>} Resultado de la eliminación
+   * Delete account and all data (GDPR)
+   * @param {string} password - Password for confirmation
+   * @returns {Promise<Object>} Deletion result
    */
   deleteAccount: async (password) => {
     const response = await api.delete('/auth/delete-account', { data: { password } });

@@ -1,6 +1,6 @@
 /**
- * @fileoverview Manejador de Errores
- * @description Funciones para manejo centralizado de errores de API
+ * @fileoverview Error Handler
+ * @description Functions for centralized API error handling
  * @module utils/errorHandler
  */
 
@@ -9,37 +9,37 @@ import Logger from './logger';
 const logger = new Logger('ErrorHandler');
 
 /**
- * Maneja errores de las peticiones API
- * @param {Error} error - Error de axios
- * @returns {string} Mensaje de error formateado
+ * Handles API request errors
+ * @param {Error} error - Axios error
+ * @returns {string} Formatted error message
  */
 export const handleApiError = (error) => {
   if (error.response) {
-    // El servidor respondió con un código de estado fuera del rango 2xx
+    // Server responded with a status code outside 2xx range
     return error.response.data?.message || 'Error en el servidor';
   } else if (error.request) {
-    // La petición se hizo pero no hubo respuesta
+    // Request was made but no response received
     return 'No se pudo conectar con el servidor';
   } else {
-    // Algo pasó al configurar la petición
+    // Something happened while setting up the request
     return error.message || 'Error desconocido';
   }
 };
 
 /**
- * Muestra un mensaje de éxito
- * @param {string} message - Mensaje a mostrar
+ * Shows a success message
+ * @param {string} message - Message to show
  */
 export const showSuccess = (message) => {
-  // Implementar con librería de toasts o notificaciones
+  // Implement with toast/notification library
   logger.success(message);
 };
 
 /**
- * Muestra un mensaje de error
- * @param {string} message - Mensaje a mostrar
+ * Shows an error message
+ * @param {string} message - Message to show
  */
 export const showError = (message) => {
-  // Implementar con librería de toasts o notificaciones
+  // Implement with toast/notification library
   logger.error(message);
 };

@@ -18,7 +18,7 @@ const Dashboard = () => {
   const [recentMatches, setRecentMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Refrescar datos del usuario al montar para tener stats actualizadas
+  // Refresh user data on mount to have updated stats
   useEffect(() => {
     refreshUser();
   }, [refreshUser]);
@@ -32,13 +32,13 @@ const Dashboard = () => {
         const matches = res.data || [];
         const now = new Date();
         
-        // Filtrar próximas partidas: estado 'programada' y fecha futura
+        // Filter upcoming matches: status 'programada' and future date
         const upcoming = matches
           .filter(m => m.status === 'programada' && new Date(m.scheduledDate) >= now)
           .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate))
           .slice(0, 5);
         
-        // Filtrar partidas recientes: estado 'finalizada', ordenadas por fecha más reciente
+        // Filter recent matches: status 'finalizada', sorted by most recent date
         const recent = matches
           .filter(m => m.status === 'finalizada')
           .sort((a, b) => new Date(b.actualDate || b.scheduledDate) - new Date(a.actualDate || a.scheduledDate))
@@ -47,7 +47,7 @@ const Dashboard = () => {
         setUpcomingMatches(upcoming);
         setRecentMatches(recent);
       } catch {
-        // Error silencioso
+        // Silent error
       } finally { setLoading(false); }
     };
     load();

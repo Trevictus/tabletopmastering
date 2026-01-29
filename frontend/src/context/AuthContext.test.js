@@ -1,9 +1,9 @@
 /**
- * Tests de ejemplo para el sistema de autenticación
+ * Sample tests for the authentication system
  *
- * Para ejecutar estos tests:
- * 1. Instalar dependencias: npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event
- * 2. Ejecutar: npm test
+ * To run these tests:
+ * 1. Install dependencies: npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event
+ * 2. Run: npm test
  */
 
 import { render, screen, waitFor } from '@testing-library/react';
@@ -11,15 +11,15 @@ import { renderHook, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import authService from '../services/authService';
 
-// Mock del authService
+// Mock of authService
 jest.mock('../services/authService');
 
 describe('AuthContext', () => {
 
   beforeEach(() => {
-    // Limpiar sessionStorage antes de cada test (usamos sessionStorage para aislamiento por pestaña)
+    // Clear sessionStorage before each test (we use sessionStorage for tab isolation)
     sessionStorage.clear();
-    // Limpiar mocks
+    // Clear mocks
     jest.clearAllMocks();
   });
 
@@ -270,7 +270,7 @@ describe('AuthContext', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Generar un error
+      // Generate an error
       await act(async () => {
         try {
           await result.current.login({ email: 'test', password: 'test' });
@@ -281,7 +281,7 @@ describe('AuthContext', () => {
 
       expect(result.current.error).toBeTruthy();
 
-      // Limpiar error
+      // Clear error
       act(() => {
         result.current.clearError();
       });
@@ -292,7 +292,7 @@ describe('AuthContext', () => {
 });
 
 /**
- * Test de integración con componente
+ * Integration test with component
  */
 describe('AuthContext Integration', () => {
 

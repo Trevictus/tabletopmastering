@@ -1,6 +1,6 @@
 /**
- * @fileoverview Servidor principal de Tabletop Mastering API
- * @description Configura Express, middlewares, rutas y conexión a MongoDB
+ * @fileoverview Tabletop Mastering API main server
+ * @description Configures Express, middlewares, routes and MongoDB connection
  * @module server
  * @requires express
  * @requires cors
@@ -22,17 +22,20 @@ const path = require('path');
 const connectDB = require('./config/database');
 const { errorHandler, notFound } = require('./middlewares/errorHandler');
 const { metricsMiddleware, metricsHandler } = require('./middlewares/metrics');
+const { createLogger } = require('./utils/logger');
 
-// Importar rutas
+const logger = createLogger('Server');
+
+// Import routes
 const authRoutes = require('./routes/authRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const gameRoutes = require('./routes/gameRoutes');
 const matchRoutes = require('./routes/matchRoutes');
 
-// Crear la aplicación Express
+// Create Express application
 const app = express();
 
-// Inicializar Sentry (v8+ API)
+// Initialize Sentry (v8+ API)
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.NODE_ENV || 'production',
@@ -42,14 +45,14 @@ Sentry.init({
   ],
 });
 
-// Conectar a la base de datos
+// Connect to database
 connectDB();
 
 // ============================================
-// SEGURIDAD BÁSICA
+// BASIC SECURITY
 // ============================================
 
-// Helmet.js - Cabeceras HTTP de seguridad
+// Helmet.js - HTTP security headers
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -59,22 +62,22 @@ app.use(helmet({
       imgSrc: ["'self'", "data:", "https:"],
     },
   },
-  crossOriginEmbedderPolicy: false, // Necesario para cargar imágenes externas
+  crossOriginEmbedderPolicy: false, // Necessary to load external images
 }));
 
-// Rate Limiting - Limitar peticiones por IP
+// Rate Limiting - Limit requests per IP
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Máximo 100 peticiones por ventana por IP
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Max 100 requests per window per IP
   message: {
     success: false,
     message: 'Demasiadas peticiones desde esta IP, por favor intenta de nuevo en 15 minutos',
   },
-  standardHeaders: true, // Devuelve info de rate limit en headers `RateLimit-*`
-  legacyHeaders: false, // Deshabilita headers `X-RateLimit-*`
+  standardHeaders: true, // Returns rate limit info in `RateLimit-*` headers
+  legacyHeaders: false, // Disables `X-RateLimit-*` headers
 });
 
-// Aplicar rate limiting a todas las rutas de API
+// Apply rate limiting to all API routes
 app.use('/api', limiter);
 
 // Rate limiting más estricto para autenticación (prevención de fuerza bruta)
@@ -100,7 +103,7 @@ app.use('/api/auth/register', authLimiter);
 // Middlewares globales
 app.use(cors({
   origin: function (origin, callback) {
-    // Construir lista de orígenes permitidos
+    // Build list of allowed origins
     const allowedOrigins = [
       'http://localhost',
       'http://localhost:5173',
@@ -109,24 +112,23 @@ app.use(cors({
       'http://127.0.0.1:5173',
     ];
 
-    // Agregar CLIENT_URL si está definida (puede tener múltiples URLs separadas por coma)
+    // Add CLIENT_URL if defined (can have multiple URLs separated by comma)
     if (process.env.CLIENT_URL) {
       const clientUrls = process.env.CLIENT_URL.split(',').map(url => url.trim());
       allowedOrigins.push(...clientUrls);
     }
 
     if (!origin) {
-      // Permitir peticiones sin origin (como Postman, curl, etc.)
+      // Allow requests without origin (like Postman, curl, etc.)
       callback(null, true);
     } else if (allowedOrigins.includes(origin)) {
-      // Origin en la lista de permitidos
+      // Origin in allowed list
       callback(null, true);
     } else {
-      // En producción, también permitir si el origin coincide con el host del servidor
-      // Esto ayuda cuando se accede por IP directa
-      console.log('⚠️ CORS bloqueado para origin:', origin);
-      console.log('📋 Orígenes permitidos:', allowedOrigins);
-      callback(new Error('CORS no permitido'));
+      // In production, also allow if origin matches server host
+      // This helps when accessing by direct IP
+      logger.warn('CORS blocked for origin', { origin, allowedOrigins });
+      callback(new Error('CORS not allowed'));
     }
   },
   credentials: true,
@@ -149,7 +151,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Ruta de bienvenida
+// Welcome route
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -164,7 +166,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Ruta de health check
+// Health check route
 app.get('/health', (req, res) => {
   res.json({
     success: true,
@@ -173,7 +175,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Ruta de bienvenida para /api
+// Welcome route for /api
 app.get('/api', (req, res) => {
   res.json({
     success: true,
@@ -210,30 +212,28 @@ app.use(errorHandler);
 // Puerto del servidor
 const PORT = process.env.PORT || 3000;
 
-// Iniciar el servidor
+// Start the server
 const server = app.listen(PORT, () => {
-  console.log('╔═══════════════════════════════════════════════╗');
-  console.log('║                                               ║');
-  console.log('║       🎲 TABLETOP MASTERING API 🎲           ║');
-  console.log('║                                               ║');
-  console.log('╚═══════════════════════════════════════════════╝');
-  console.log(`🚀 Servidor corriendo en modo ${process.env.NODE_ENV}`);
-  console.log(`📡 Puerto: ${PORT}`);
-  console.log(`🌐 URL: http://localhost:${PORT}`);
-  console.log(`📚 Documentación: http://localhost:${PORT}/`);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  logger.info('='.repeat(47));
+  logger.info('   TABLETOP MASTERING API');
+  logger.info('='.repeat(47));
+  logger.info(`Server running in ${process.env.NODE_ENV} mode`);
+  logger.info(`Port: ${PORT}`);
+  logger.info(`URL: http://localhost:${PORT}`);
+  logger.info(`Documentation: http://localhost:${PORT}/`);
+  logger.info('-'.repeat(47));
 });
 
-// Manejo de errores no capturados
+// Handle uncaught errors
 process.on('unhandledRejection', (err) => {
-  console.error('❌ Error no manejado:', err);
+  logger.error('Unhandled rejection', err);
   server.close(() => process.exit(1));
 });
 
 process.on('SIGTERM', () => {
-  console.log('👋 Señal SIGTERM recibida, cerrando el servidor...');
+  logger.info('SIGTERM signal received, closing server...');
   server.close(() => {
-    console.log('✅ Servidor cerrado correctamente');
+    logger.info('Server closed successfully');
   });
 });
 

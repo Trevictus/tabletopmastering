@@ -1,68 +1,68 @@
 /**
- * @fileoverview Servicio de Partidas
- * @description Operaciones CRUD de partidas y calendario
+ * @fileoverview Match Service
+ * @description CRUD operations for matches and calendar
  * @module services/matchService
  */
 
 import api from './api';
 
 const matchService = {
-  // Obtener partidas (cuando se implemente el backend)
+  // Get matches (when backend is implemented)
   getMatches: async (params = {}) => {
     const response = await api.get('/matches', { params });
     return response.data;
   },
 
-  // Obtener todas las partidas del usuario de todos sus grupos
+  // Get all user matches from all their groups
   getAllUserMatches: async (params = {}) => {
     const response = await api.get('/matches', { params });
     return response.data;
   },
 
-  // Crear nueva partida
+  // Create new match
   createMatch: async (matchData) => {
     const response = await api.post('/matches', matchData);
     return response.data;
   },
 
-  // Obtener detalles de una partida
+  // Get match details
   getMatchById: async (matchId) => {
     const response = await api.get(`/matches/${matchId}`);
     return response.data;
   },
 
-  // Actualizar partida
+  // Update match
   updateMatch: async (matchId, matchData) => {
     const response = await api.put(`/matches/${matchId}`, matchData);
     return response.data;
   },
 
-  // Eliminar partida
+  // Delete match
   deleteMatch: async (matchId) => {
     const response = await api.delete(`/matches/${matchId}`);
     return response.data;
   },
 
-  // Confirmar asistencia a una partida
+  // Confirm attendance to a match
   confirmAttendance: async (matchId) => {
     const response = await api.post(`/matches/${matchId}/confirm`);
     return response.data;
   },
 
-  // Cancelar asistencia (actualizar confirmed a false)
+  // Cancel attendance (update confirmed to false)
   cancelAttendance: async (matchId) => {
     const response = await api.delete(`/matches/${matchId}/confirm`);
     return response.data;
   },
 
   /**
-   * Finalizar partida y registrar resultados
-   * @param {string} matchId - ID de la partida
-   * @param {object} resultData - Datos de resultados
-   * @param {string} resultData.winnerId - ID del ganador (opcional)
-   * @param {Array} resultData.results - Array de { userId, score, position }
-   * @param {object} resultData.duration - { value: number, unit: 'minutos'|'horas' }
-   * @param {string} resultData.notes - Notas adicionales (opcional)
+   * Finish match and record results
+   * @param {string} matchId - Match ID
+   * @param {object} resultData - Result data
+   * @param {string} resultData.winnerId - Winner ID (optional)
+   * @param {Array} resultData.results - Array of { userId, score, position }
+   * @param {object} resultData.duration - { value: number, unit: 'minutes'|'hours' }
+   * @param {string} resultData.notes - Additional notes (optional)
    * @returns {object} { data: match, ranking: rankingReport }
    */
   finishMatch: async (matchId, resultData) => {

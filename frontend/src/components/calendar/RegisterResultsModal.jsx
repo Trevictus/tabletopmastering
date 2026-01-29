@@ -22,17 +22,17 @@ const RegisterResultsModal = ({
   match, 
   onSave 
 }) => {
-  // Estado del formulario
+  // Form state
   const [playerResults, setPlayerResults] = useState([]);
   const [duration, setDuration] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Inicializar resultados de jugadores cuando se abre el modal
+  // Initialize player results when modal opens
   useEffect(() => {
     if (match && isOpen) {
-      // Solo incluir jugadores que confirmaron asistencia
+      // Only include players who confirmed attendance
       const confirmedPlayers = match.players?.filter(p => p.confirmed) || [];
       
       const initialResults = confirmedPlayers.map(player => ({
@@ -49,7 +49,7 @@ const RegisterResultsModal = ({
     }
   }, [match, isOpen]);
 
-  // Manejar cambio de posición
+  // Handle position change
   const handlePositionChange = (userId, position) => {
     setPlayerResults(prev => 
       prev.map(p => 
@@ -58,13 +58,13 @@ const RegisterResultsModal = ({
           : p
       )
     );
-    // Limpiar error si existe
+    // Clear error if exists
     if (errors.positions) {
       setErrors(prev => ({ ...prev, positions: '' }));
     }
   };
 
-  // Manejar cambio de puntuación (opcional)
+  // Handle score change (optional)
   const handleScoreChange = (userId, score) => {
     setPlayerResults(prev => 
       prev.map(p => 
@@ -75,7 +75,7 @@ const RegisterResultsModal = ({
     );
   };
 
-  // Formatear duración para mostrar horas/minutos
+  // Format duration to show hours/minutes
   const formatDurationDisplay = (minutes) => {
     if (!minutes || isNaN(minutes)) return '';
     const mins = parseInt(minutes);
@@ -87,23 +87,23 @@ const RegisterResultsModal = ({
       : `${hours} hora${hours > 1 ? 's' : ''}`;
   };
 
-  // Validar formulario
+  // Validate form
   const validateForm = () => {
     const newErrors = {};
 
-    // Verificar que todos tengan posición asignada
+    // Check that all have assigned position
     const playersWithPosition = playerResults.filter(p => p.position !== null);
     if (playersWithPosition.length === 0) {
       newErrors.positions = 'Debes asignar al menos una posición';
     }
 
-    // Verificar que no haya posiciones vacías para ningún jugador
+    // Check that no positions are empty for any player
     const playersWithoutPosition = playerResults.filter(p => p.position === null);
     if (playersWithoutPosition.length > 0 && playersWithPosition.length > 0) {
       newErrors.positions = 'Todos los jugadores deben tener una posición asignada';
     }
 
-    // Validar duración si se proporciona
+    // Validate duration if provided
     if (duration && (isNaN(duration) || parseInt(duration) < 1)) {
       newErrors.duration = 'La duración debe ser un número positivo';
     }
@@ -116,17 +116,17 @@ const RegisterResultsModal = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  // Enviar resultados
+  // Submit results
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
     setLoading(true);
 
     try {
-      // Determinar ganador (posición 1)
+      // Determine winner (position 1)
       const winner = playerResults.find(p => p.position === 1);
       
-      // Preparar datos para enviar
+      // Prepare data to send
       const resultData = {
         winnerId: winner?.userId || null,
         results: playerResults.map(p => ({
@@ -143,7 +143,7 @@ const RegisterResultsModal = ({
 
       await onSave(match._id, resultData);
     } catch (error) {
-      console.error('Error al guardar resultados:', error);
+      console.error('Error saving results:', error);
       setErrors({ submit: error.message || 'Error al guardar los resultados' });
     } finally {
       setLoading(false);

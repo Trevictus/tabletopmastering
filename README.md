@@ -84,14 +84,14 @@ npm run dev
 ```
 
 ## Documentation
-- [User Guide](docs/guia-usuario.md)
-- [API Documentation](docs/api.md)
-- [Competitive Analysis](docs/analisis-competencias.md)
-- [Organizational Structure](docs/estructura-organizativa.md)
-- [Financing](docs/financiacion.md)
-- [Budget and ROI](docs/presupuesto.md)
-- [Resources and APIs](docs/recursos.md)
-- [Legislation and Compliance](docs/legislacion.md)
+- [User Guide](docs/user-guide.md)
+- [API Documentation](docs/api-en.md)
+- [Competitive Analysis](docs/competitive-analysis.md)
+- [Organizational Structure](docs/organizational-structure.md)
+- [Financing](docs/financing.md)
+- [Budget and ROI](docs/budget.md)
+- [Resources and APIs](docs/resources.md)
+- [Legislation and Compliance](docs/legislation.md)
 
 ## Technology Stack
 

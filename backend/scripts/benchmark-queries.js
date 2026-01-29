@@ -14,7 +14,7 @@ const Match = require('../models/Match');
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/tabletopmastering';
 
 /**
- * Medir tiempo de ejecución de una función async
+ * Measure execution time of an async function
  */
 async function measureTime(name, fn, iterations = 10) {
   const times = [];
@@ -23,7 +23,7 @@ async function measureTime(name, fn, iterations = 10) {
     const start = process.hrtime.bigint();
     await fn();
     const end = process.hrtime.bigint();
-    times.push(Number(end - start) / 1_000_000); // Convertir a ms
+    times.push(Number(end - start) / 1_000_000); // Convert to ms
   }
   
   const avg = times.reduce((a, b) => a + b, 0) / times.length;

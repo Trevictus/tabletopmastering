@@ -23,47 +23,47 @@ const Calendar = () => {
   const toast = useToast();
   const location = useLocation();
   
-  // Estado del calendario
+  // Calendar state
   const [currentDate, setCurrentDate] = useState(new Date());
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState('');
 
-  // Modales
+  // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [editingMatch, setEditingMatch] = useState(null);
 
-  // Abrir modal si viene del Dashboard con state
+  // Open modal if coming from Dashboard with state
   useEffect(() => {
     if (location.state?.openCreateModal) {
       setShowCreateModal(true);
-      // Limpiar el state para que no se abra de nuevo al navegar
+      // Clear state so it doesn't open again when navigating
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
 
-  // Cargar partidas
+  // Load matches
   const loadMatches = useCallback(async () => {
     setLoading(true);
     setError('');
 
     try {
-      // Obtener todas las partidas del usuario sin filtro de grupo
+      // Get all user matches without group filter
       const response = await matchService.getAllUserMatches({
         page: 1,
-        limit: 1000 // Cargar todas las partidas
+        limit: 1000 // Load all matches
       });
       
-      // La respuesta tiene estructura { success, count, total, pages, currentPage, data }
-      // donde 'data' es el array de partidas
+      // Response has structure { success, count, total, pages, currentPage, data }
+      // where 'data' is the matches array
       setMatches(response.data || []);
     } catch (err) {
-      console.error('Error al cargar partidas:', err);
-      // Si el endpoint no existe (404), mostrar mensaje informativo
+      console.error('Error loading matches:', err);
+      // If endpoint doesn't exist (404), show informative message
       if (err.response?.status === 404) {
         setError('El módulo de partidas aún no está disponible. Próximamente podrás gestionar tu calendario.');
       } else {
@@ -74,7 +74,7 @@ const Calendar = () => {
     }
   }, []);
 
-  // Cargar partidas al montar
+  // Load matches on mount
   useEffect(() => {
     loadMatches();
   }, [loadMatches]);
@@ -100,7 +100,7 @@ const Calendar = () => {
       setShowCreateModal(false);
       setEditingMatch(null);
       
-      // Actualizar también el match seleccionado si está abierto el modal de detalles
+      // Also update the selected match if details modal is open
       if (selectedMatch?._id === matchId) {
         setSelectedMatch(response.data);
       }
@@ -135,10 +135,10 @@ const Calendar = () => {
     try {
       const response = await matchService.confirmAttendance(matchId);
       
-      // Actualizar la partida en la lista
+      // Update the match in the list
       setMatches(prev => prev.map(m => m._id === matchId ? response.data : m));
       
-      // Actualizar también el match seleccionado
+      // Also update the selected match
       if (selectedMatch?._id === matchId) {
         setSelectedMatch(response.data);
       }
@@ -154,7 +154,7 @@ const Calendar = () => {
     try {
       const response = await matchService.cancelAttendance(matchId);
       
-      // Si la partida fue eliminada por falta de jugadores
+      // If the match was deleted due to lack of players
       if (response.deleted) {
         setMatches(prev => prev.filter(m => m._id !== matchId));
         setShowDetailsModal(false);
@@ -163,10 +163,10 @@ const Calendar = () => {
         return;
       }
       
-      // Actualizar la partida en la lista
+      // Update the match in the list
       setMatches(prev => prev.map(m => m._id === matchId ? response.data : m));
       
-      // Cerrar el modal
+      // Close the modal
       setShowDetailsModal(false);
       setSelectedMatch(null);
       
@@ -189,9 +189,9 @@ const Calendar = () => {
   };
 
   const handleDayClick = (date) => {
-    // Función para formatear fecha a YYYY-MM-DD
-    // Para fechas de la base de datos (strings ISO), extrae directamente la parte de la fecha
-    // para evitar problemas de conversión de zona horaria
+    // Function to format date to YYYY-MM-DD
+    // For database dates (ISO strings), extracts the date part directly
+    // to avoid timezone conversion issues
     const formatDateLocal = (d) => {
       // Si es un string ISO (de la base de datos), extraer la fecha directamente
       if (typeof d === 'string' && d.includes('T')) {
@@ -205,7 +205,7 @@ const Calendar = () => {
       return `${year}-${month}-${day}`;
     };
 
-    // Filtrar partidas del día seleccionado usando hora local
+    // Filter matches of the selected day using local time
     const dateStr = formatDateLocal(date);
     const dayMatches = matches.filter(match => {
       return formatDateLocal(match.scheduledDate) === dateStr;
@@ -214,7 +214,7 @@ const Calendar = () => {
     if (dayMatches.length === 1) {
       handleMatchClick(dayMatches[0]);
     } else if (dayMatches.length > 1) {
-      // Si hay múltiples partidas, mostrar la primera
+      // If there are multiple matches, show the first one
       handleMatchClick(dayMatches[0]);
     }
   };
@@ -229,35 +229,35 @@ const Calendar = () => {
     setSelectedMatch(null);
   };
 
-  // Handler para abrir modal de registro de resultados
+  // Handler for opening results recording modal
   const handleOpenResultsModal = (match) => {
     setSelectedMatch(match);
     setShowDetailsModal(false);
     setShowResultsModal(true);
   };
 
-  // Handler para cerrar modal de resultados
+  // Handler for closing results modal
   const handleCloseResultsModal = () => {
     setShowResultsModal(false);
     setSelectedMatch(null);
   };
 
-  // Handler para guardar resultados de la partida
+  // Handler for saving match results
   const handleSaveResults = async (matchId, resultData) => {
     try {
       const response = await matchService.finishMatch(matchId, resultData);
       
-      // Actualizar la partida en la lista con el nuevo estado
+      // Update the match in the list with the new state
       setMatches(prev => prev.map(m => m._id === matchId ? response.data : m));
       
-      // Refrescar datos del usuario para actualizar stats (puntos, victorias, etc.)
+      // Refresh user data to update stats (points, wins, etc.)
       await refreshUser();
       
-      // Cerrar modal de resultados
+      // Close results modal
       setShowResultsModal(false);
       setSelectedMatch(null);
       
-      // Mostrar mensaje de éxito con info de ranking si está disponible
+      // Show success message with ranking info if available
       if (response.ranking?.updatedPlayers?.length > 0) {
         const winnerInfo = response.ranking.updatedPlayers.find(p => p.isWinner);
         if (winnerInfo) {

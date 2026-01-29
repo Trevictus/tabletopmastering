@@ -9,16 +9,16 @@ import Input from '../../components/common/Input';
 import styles from './Register.module.css';
 
 /**
- * Página de Registro
- * Formulario de creación de cuenta con validación completa
+ * Register Page
+ * Account creation form with complete validation
  */
 const Register = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
 
-  // Cerrar modal al hacer clic fuera del formulario
+  // Close modal when clicking outside the form
   const handleOverlayClick = (e) => {
-    // Solo cerrar si el clic fue directamente en el overlay, no en el formulario
+    // Only close if click was directly on overlay, not on the form
     if (e.target === e.currentTarget) {
       navigate('/');
     }
@@ -54,12 +54,12 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
   const [nicknameSuggestions, setNicknameSuggestions] = useState([]);
-  const [nicknameAvailable, setNicknameAvailable] = useState(null); // null=no verificado, true/false
+  const [nicknameAvailable, setNicknameAvailable] = useState(null); // null=not verified, true/false
   const [emailAvailable, setEmailAvailable] = useState(null);
   const [checkingNickname, setCheckingNickname] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
 
-  // Validación de nombre de jugador
+  // Player name validation
   const validateNickname = (nickname) => {
     if (!nickname.trim()) {
       return 'El nombre de jugador es obligatorio';
@@ -76,7 +76,7 @@ const Register = () => {
     return '';
   };
 
-  // Validación de nombre
+  // Name validation
   const validateName = (name) => {
     if (!name.trim()) {
       return 'El nombre es obligatorio';
@@ -93,9 +93,9 @@ const Register = () => {
     return '';
   };
 
-  // Validación de email
+  // Email validation
   const validateEmail = (email) => {
-    // Solo dominios estándar con .com o .es
+    // Only standard domains with .com or .es
     const emailRegex = /^[a-zA-Z0-9._-]+@(gmail|outlook|hotmail|yahoo|icloud|protonmail|live|msn)\.(com|es)$/i;
     if (!email.trim()) {
       return 'El email es obligatorio';
@@ -106,7 +106,7 @@ const Register = () => {
     return '';
   };
 
-  // Validación de contraseña
+  // Password validation
   const validatePassword = (password) => {
     if (!password) {
       return 'La contraseña es obligatoria';
@@ -114,15 +114,15 @@ const Register = () => {
     if (password.length < 8) {
       return 'La contraseña debe tener al menos 8 caracteres';
     }
-    // Recomendaciones adicionales (no obligatorias)
+    // Additional recommendations (not mandatory)
     if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
-      // Solo advertir pero no bloquear
+      // Only warn but don't block
       return '';
     }
     return '';
   };
 
-  // Validación de confirmación de contraseña
+  // Confirm password validation
   const validateConfirmPassword = (confirmPassword, password) => {
     if (!confirmPassword) {
       return 'Debes confirmar tu contraseña';
@@ -133,17 +133,17 @@ const Register = () => {
     return '';
   };
 
-  // Calcular fortaleza de la contraseña
+  // Calculate password strength
   const getPasswordStrength = (password) => {
     if (!password) return { strength: 0, label: '', color: '' };
 
     let strength = 0;
     
-    // Longitud
+    // Length
     if (password.length >= 8) strength += 1;
     if (password.length >= 12) strength += 1;
     
-    // Complejidad
+    // Complexity
     if (/[a-z]/.test(password)) strength += 1;
     if (/[A-Z]/.test(password)) strength += 1;
     if (/[0-9]/.test(password)) strength += 1;
@@ -160,7 +160,7 @@ const Register = () => {
 
   const passwordStrength = getPasswordStrength(formData.password);
 
-  // Manejar cambios en los inputs
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -169,12 +169,12 @@ const Register = () => {
       [name]: value
     }));
 
-    // Limpiar error del servidor al escribir
+    // Clear server error when typing
     if (serverError) {
       setServerError('');
     }
 
-    // Resetear disponibilidad al escribir
+    // Reset availability when typing
     if (name === 'nickname') {
       setNicknameAvailable(null);
       setNicknameSuggestions([]);
@@ -183,7 +183,7 @@ const Register = () => {
       setEmailAvailable(null);
     }
 
-    // Validar en tiempo real si el campo ya fue tocado
+    // Validate in real-time if field was already touched
     if (touched[name]) {
       switch (name) {
         case 'nickname':
@@ -216,7 +216,7 @@ const Register = () => {
     }
   };
 
-  // Manejar pérdida de foco (blur)
+  // Handle blur
   const handleBlur = async (e) => {
     const { name, value } = e.target;
 
@@ -225,13 +225,13 @@ const Register = () => {
       [name]: true
     }));
 
-    // Validar el campo
+    // Validate field
     switch (name) {
       case 'nickname': {
         const nicknameError = validateNickname(value);
         setErrors((prev) => ({ ...prev, nickname: nicknameError }));
         
-        // Si no hay error de formato, verificar disponibilidad
+        // If no format error, check availability
         if (!nicknameError && value.trim()) {
           setCheckingNickname(true);
           setNicknameAvailable(null);
@@ -247,7 +247,7 @@ const Register = () => {
               setNicknameSuggestions(result.suggestions || []);
             }
           } catch {
-            // Si falla la verificación, permitir continuar
+            // If check fails, allow to continue
             setNicknameAvailable(null);
           } finally {
             setCheckingNickname(false);
@@ -262,7 +262,7 @@ const Register = () => {
         const emailError = validateEmail(value);
         setErrors((prev) => ({ ...prev, email: emailError }));
         
-        // Si no hay error de formato, verificar disponibilidad
+        // If no format error, check availability
         if (!emailError && value.trim()) {
           setCheckingEmail(true);
           setEmailAvailable(null);
@@ -275,7 +275,7 @@ const Register = () => {
               setErrors((prev) => ({ ...prev, email: 'Este email ya está registrado' }));
             }
           } catch {
-            // Si falla la verificación, permitir continuar
+            // If check fails, allow to continue
             setEmailAvailable(null);
           } finally {
             setCheckingEmail(false);
@@ -297,7 +297,7 @@ const Register = () => {
     }
   };
 
-  // Seleccionar una sugerencia de nickname
+  // Select a nickname suggestion
   const handleSelectSuggestion = (suggestion) => {
     setFormData((prev) => ({ ...prev, nickname: suggestion }));
     setNicknameSuggestions([]);
@@ -305,11 +305,11 @@ const Register = () => {
     setNicknameAvailable(true);
   };
 
-  // Manejar envío del formulario
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Marcar todos los campos como tocados
+    // Mark all fields as touched
     setTouched({
       nickname: true,
       name: true,
@@ -319,7 +319,7 @@ const Register = () => {
       acceptTerms: true
     });
 
-    // Validar todos los campos
+    // Validate all fields
     const nicknameError = validateNickname(formData.nickname);
     const nameError = validateName(formData.name);
     const emailError = validateEmail(formData.email);
@@ -339,17 +339,17 @@ const Register = () => {
       acceptTerms: acceptTermsError
     });
 
-    // Si hay errores, no enviar el formulario
+    // If there are errors, don't submit the form
     if (nicknameError || nameError || emailError || passwordError || confirmPasswordError || acceptTermsError) {
       return;
     }
 
-    // Si sabemos que el nickname o email no están disponibles, no enviar
+    // If we know nickname or email is not available, don't submit
     if (nicknameAvailable === false || emailAvailable === false) {
       return;
     }
 
-    // Enviar datos al servidor
+    // Send data to server
     setIsLoading(true);
     setServerError('');
     setNicknameSuggestions([]);
@@ -358,7 +358,7 @@ const Register = () => {
       const { nickname, name, email, password } = formData;
       const response = await register({ nickname, name, email, password });
 
-      // Registro exitoso - el usuario ya está logueado en el contexto
+      // Registration successful - user is already logged in the context
       if (response.data?.user) {
         navigate('/', { 
           state: { 
@@ -367,11 +367,11 @@ const Register = () => {
         });
       }
     } catch (error) {
-      // Manejar errores del servidor
+      // Handle server errors
       const errorData = error.response?.data;
       if (errorData?.message) {
         setServerError(errorData.message);
-        // Si hay sugerencias de nickname, mostrarlas
+        // If there are nickname suggestions, show them
         if (errorData.suggestions && errorData.suggestions.length > 0) {
           setNicknameSuggestions(errorData.suggestions);
         }

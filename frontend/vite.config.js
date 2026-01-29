@@ -8,9 +8,9 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: false,
-    // Permitir todos los hosts para Docker
+    // Allow all hosts for Docker
     allowedHosts: true,
-    // Configuración HMR para compatibilidad con proxies y navegadores restrictivos
+    // HMR configuration for proxy and restrictive browser compatibility
     hmr: {
       clientPort: 80,
       host: 'localhost',
@@ -21,7 +21,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173
   },
-  // Optimización para mejor compatibilidad
+  // Optimization for better compatibility
   build: {
     target: 'es2020',
     sourcemap: false,

@@ -1,6 +1,6 @@
 # ============================================
 # TABLETOP MASTERING - FRONTEND DOCKERFILE
-# Multi-stage build optimizado para desarrollo y producción
+# Multi-stage build optimized for development and production
 # ============================================
 
 # ---- Base Stage ----
@@ -10,26 +10,26 @@ RUN apk add --no-cache wget
 
 WORKDIR /app
 
-# Copiar archivos de dependencias primero (mejor caché de capas)
+# Copy dependency files first (better layer cache)
 COPY package*.json ./
 
 # ---- Dependencies Stage ----
 FROM base AS dependencies
 
-# Instalar todas las dependencias
-# Usamos npm install porque puede que no exista package-lock.json
+# Install all dependencies
+# Using npm install because package-lock.json might not exist
 RUN npm install && npm cache clean --force
 
 # ---- Development Stage ----
 FROM base AS development
 
-# Copiar dependencias desde el stage de dependencies
+# Copy dependencies from dependencies stage
 COPY --from=dependencies /app/node_modules ./node_modules
 
-# Copiar código fuente
+# Copy source code
 COPY . .
 
-# Crear usuario no-root para seguridad
+# Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 -G nodejs && \
     chown -R nodejs:nodejs /app
@@ -38,7 +38,7 @@ USER nodejs
 
 EXPOSE 5173
 
-# Health check para desarrollo (usar 127.0.0.1 para evitar IPv6)
+# Health check for development (use 127.0.0.1 to avoid IPv6)
 HEALTHCHECK --interval=10s --timeout=5s --start-period=40s --retries=5 \
     CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:5173 || exit 1
 
@@ -47,23 +47,23 @@ CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 # ---- Build Stage ----
 FROM dependencies AS build
 
-# Copiar código fuente
+# Copy source code
 COPY . .
 
-# Argumentos de build para variables de entorno
+# Build arguments for environment variables
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 
-# Construir la aplicación para producción
+# Build the application for production
 RUN npm run build
 
 # ---- Production Stage ----
 FROM nginx:alpine AS production
 
-# Copiar assets construidos
+# Copy built assets
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Configuración de nginx para SPA
+# Nginx configuration for SPA
 RUN printf 'server {\n\
     listen 80;\n\
     server_name _;\n\

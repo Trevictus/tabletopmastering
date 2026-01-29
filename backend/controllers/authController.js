@@ -1,6 +1,6 @@
 /**
- * @fileoverview Controlador de Autenticación
- * @description Maneja registro, login, logout y perfil de usuarios
+ * @fileoverview Authentication Controller
+ * @description Handles registration, login, logout and user profile
  * @module controllers/authController
  * @requires ../models/User
  * @requires ../models/Group
@@ -14,15 +14,15 @@ const Match = require('../models/Match');
 const generateToken = require('../utils/generateToken');
 
 /**
- * Genera sugerencias de nicknames alternativos basados en el original
- * @param {string} baseNickname - El nickname base que ya está en uso
- * @returns {Promise<string[]>} - Array de sugerencias disponibles
+ * Generates alternative nickname suggestions based on the original
+ * @param {string} baseNickname - The base nickname that is already in use
+ * @returns {Promise<string[]>} - Array of available suggestions
  */
 const generateNicknameSuggestions = async (baseNickname) => {
   const suggestions = [];
-  const base = baseNickname.toLowerCase().replace(/[0-9_]+$/, ''); // Quitar números/guiones del final
+  const base = baseNickname.toLowerCase().replace(/[0-9_]+$/, ''); // Remove trailing numbers/underscores
   
-  // Estrategias de generación de sugerencias
+  // Suggestion generation strategies
   const candidates = [
     `${base}_`,
     `${base}1`,
@@ -41,18 +41,18 @@ const generateNicknameSuggestions = async (baseNickname) => {
     `${base}_bg`,
   ];
   
-  // Verificar cuáles están disponibles
+  // Verify which ones are available
   for (const candidate of candidates) {
     if (candidate.length >= 3 && candidate.length <= 20 && /^[a-z0-9_]+$/.test(candidate)) {
       const exists = await User.findOne({ nickname: candidate });
       if (!exists) {
         suggestions.push(candidate);
-        if (suggestions.length >= 3) break; // Máximo 3 sugerencias
+        if (suggestions.length >= 3) break; // Maximum 3 suggestions
       }
     }
   }
   
-  // Si aún no hay suficientes, agregar con números aleatorios
+  // If still not enough, add with random numbers
   while (suggestions.length < 3) {
     const randomNum = Math.floor(Math.random() * 9000) + 1000;
     const candidate = `${base}${randomNum}`;
@@ -68,7 +68,7 @@ const generateNicknameSuggestions = async (baseNickname) => {
 };
 
 /**
- * @desc    Registrar un nuevo usuario
+ * @desc    Register a new user
  * @route   POST /api/auth/register
  * @access  Public
  */
@@ -76,7 +76,7 @@ const register = async (req, res, next) => {
   try {
     const { nickname, name, email, password } = req.body;
 
-    // Verificar si el email ya existe
+    // Verify if email already exists
     const emailExists = await User.findOne({ email: email.toLowerCase() });
     if (emailExists) {
       return res.status(400).json({
@@ -85,7 +85,7 @@ const register = async (req, res, next) => {
       });
     }
 
-    // Verificar si el nickname ya existe
+    // Verify if nickname already exists
     const nicknameExists = await User.findOne({ nickname: nickname.toLowerCase() });
     if (nicknameExists) {
       const suggestions = await generateNicknameSuggestions(nickname);
@@ -96,7 +96,7 @@ const register = async (req, res, next) => {
       });
     }
 
-    // Crear el usuario
+    // Create the user
     const user = await User.create({
       nickname: nickname.toLowerCase(),
       name,
@@ -127,7 +127,7 @@ const register = async (req, res, next) => {
 };
 
 /**
- * @desc    Iniciar sesión
+ * @desc    Login
  * @route   POST /api/auth/login
  * @access  Public
  */
@@ -142,7 +142,7 @@ const login = async (req, res, next) => {
       });
     }
 
-    // Buscar usuario por email O nickname
+    // Search user by email OR nickname
     const searchValue = identifier.toLowerCase().trim();
     
     const user = await User.findOne({
@@ -159,7 +159,7 @@ const login = async (req, res, next) => {
       });
     }
 
-    // Verificar la contraseña
+    // Verify password
     const isPasswordCorrect = await user.comparePassword(password);
 
     if (!isPasswordCorrect) {
@@ -169,7 +169,7 @@ const login = async (req, res, next) => {
       });
     }
 
-    // Verificar si el usuario está activo
+    // Verify if user is active
     if (!user.isActive) {
       return res.status(401).json({
         success: false,
@@ -201,7 +201,7 @@ const login = async (req, res, next) => {
 };
 
 /**
- * @desc    Obtener perfil del usuario autenticado
+ * @desc    Get authenticated user profile
  * @route   GET /api/auth/me
  * @access  Private
  */
@@ -219,7 +219,7 @@ const getMe = async (req, res, next) => {
 };
 
 /**
- * @desc    Actualizar perfil del usuario autenticado
+ * @desc    Update authenticated user profile
  * @route   PUT /api/auth/profile
  * @access  Private
  */
@@ -228,7 +228,7 @@ const updateProfile = async (req, res, next) => {
     const { nickname, name, email, avatar, description, quote } = req.body;
     const userId = req.user._id;
 
-    // Validar unicidad de nickname si se está cambiando
+    // Validate nickname uniqueness if changing
     if (nickname) {
       const existingNickname = await User.findOne({ 
         nickname: nickname.toLowerCase().trim(),
@@ -244,7 +244,7 @@ const updateProfile = async (req, res, next) => {
       }
     }
 
-    // Validar unicidad de email si se está cambiando
+    // Validate email uniqueness if changing
     if (email) {
       const existingEmail = await User.findOne({ 
         email: email.toLowerCase().trim(),
@@ -282,7 +282,7 @@ const updateProfile = async (req, res, next) => {
 };
 
 /**
- * @desc    Verificar disponibilidad de nickname
+ * @desc    Check nickname availability
  * @route   POST /api/auth/check-nickname
  * @access  Public
  */
@@ -300,7 +300,7 @@ const checkNickname = async (req, res, next) => {
 
     const normalizedNickname = nickname.toLowerCase().trim();
     
-    // Validar formato (letras, números, guiones y guiones bajos)
+    // Validate format (letters, numbers, hyphens and underscores)
     if (!/^[a-z0-9_-]+$/.test(normalizedNickname)) {
       return res.status(400).json({
         success: false,
@@ -309,7 +309,7 @@ const checkNickname = async (req, res, next) => {
       });
     }
 
-    // Buscar si existe (excluyendo al usuario actual si se proporciona)
+    // Search if exists (excluding current user if provided)
     const query = { nickname: normalizedNickname };
     if (userId) {
       query._id = { $ne: userId };
@@ -338,7 +338,7 @@ const checkNickname = async (req, res, next) => {
 };
 
 /**
- * @desc    Verificar disponibilidad de email
+ * @desc    Check email availability
  * @route   POST /api/auth/check-email
  * @access  Public
  */
@@ -356,7 +356,7 @@ const checkEmail = async (req, res, next) => {
 
     const normalizedEmail = email.toLowerCase().trim();
     
-    // Validar formato
+    // Validate format
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       return res.status(400).json({
         success: false,
@@ -365,7 +365,7 @@ const checkEmail = async (req, res, next) => {
       });
     }
 
-    // Buscar si existe (excluyendo al usuario actual si se proporciona)
+    // Search if exists (excluding current user if provided)
     const query = { email: normalizedEmail };
     if (userId) {
       query._id = { $ne: userId };
@@ -392,7 +392,7 @@ const checkEmail = async (req, res, next) => {
 };
 
 /**
- * @desc    Exportar todos los datos del usuario (RGPD)
+ * @desc    Export all user data (GDPR)
  * @route   GET /api/auth/export-data
  * @access  Private
  */
@@ -400,27 +400,27 @@ const exportUserData = async (req, res, next) => {
   try {
     const userId = req.user._id;
 
-    // Obtener datos del usuario
+    // Get user data
     const user = await User.findById(userId).select('-password');
 
-    // Obtener grupos del usuario
+    // Get user's groups
     const groups = await Group.find({ 'members.user': userId })
       .select('name description createdAt')
       .lean();
 
-    // Obtener partidas del usuario
+    // Get user's matches
     const matches = await Match.find({ 'players.user': userId })
       .populate('game', 'name')
       .populate('group', 'name')
       .select('scheduledDate actualDate status players')
       .lean();
 
-    // Formatear partidas para incluir solo datos del usuario
+    // Format matches to include only user data
     const userMatches = matches.map(match => {
       const playerData = match.players.find(p => p.user.toString() === userId.toString());
       return {
-        game: match.game?.name || 'Desconocido',
-        group: match.group?.name || 'Desconocido',
+        game: match.game?.name || 'Unknown',
+        group: match.group?.name || 'Unknown',
         scheduledDate: match.scheduledDate,
         actualDate: match.actualDate,
         status: match.status,
@@ -464,7 +464,7 @@ const exportUserData = async (req, res, next) => {
 };
 
 /**
- * @desc    Eliminar cuenta y todos los datos del usuario (RGPD)
+ * @desc    Delete account and all user data (GDPR)
  * @route   DELETE /api/auth/delete-account
  * @access  Private
  */
@@ -473,7 +473,7 @@ const deleteAccount = async (req, res, next) => {
     const userId = req.user._id;
     const { password } = req.body;
 
-    // Verificar contraseña
+    // Verify password
     const user = await User.findById(userId).select('+password');
     if (!user) {
       return res.status(404).json({
@@ -490,7 +490,7 @@ const deleteAccount = async (req, res, next) => {
       });
     }
 
-    // Verificar si el usuario es admin de algún grupo
+    // Verify if user is admin of any group
     const adminGroups = await Group.find({ admin: userId });
     if (adminGroups.length > 0) {
       return res.status(400).json({
@@ -500,19 +500,19 @@ const deleteAccount = async (req, res, next) => {
       });
     }
 
-    // Eliminar usuario de grupos
+    // Remove user from groups
     await Group.updateMany(
       { 'members.user': userId },
       { $pull: { members: { user: userId } } }
     );
 
-    // Eliminar participación en partidas (marcar como eliminado)
+    // Remove participation in matches (mark as deleted)
     await Match.updateMany(
       { 'players.user': userId },
       { $pull: { players: { user: userId } } }
     );
 
-    // Eliminar usuario
+    // Delete user
     await User.findByIdAndDelete(userId);
 
     res.status(200).json({

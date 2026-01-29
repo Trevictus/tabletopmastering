@@ -4,24 +4,24 @@ import { useAuth } from '../../context/AuthContext';
 import Loading from '../common/Loading';
 
 /**
- * Componente PublicRoute
- * Redirige a usuarios autenticados lejos de páginas públicas (login/register)
- * Útil para evitar que usuarios ya logueados vean el formulario de login
+ * PublicRoute Component
+ * Redirects authenticated users away from public pages (login/register)
+ * Useful to prevent already logged-in users from seeing the login form
  */
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
-  // Mostrar loading mientras se verifica la autenticación
+  // Show loading while checking authentication
   if (loading) {
     return <Loading fullScreen message="Cargando..." />;
   }
 
-  // Si está autenticado, redirigir al inicio
+  // If authenticated, redirect to home
   if (isAuthenticated) {
     return <Navigate to="/home" replace />;
   }
 
-  // Si no está autenticado, mostrar el contenido (login/register)
+  // If not authenticated, show the content (login/register)
   return children;
 };
 

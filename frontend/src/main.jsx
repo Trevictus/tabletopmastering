@@ -1,6 +1,6 @@
 /**
- * @fileoverview Punto de entrada de la aplicación React
- * @description Renderiza el componente App en el DOM
+ * @fileoverview React application entry point
+ * @description Renders the App component to the DOM
  * @module main
  */
 
@@ -10,7 +10,7 @@ import * as Sentry from '@sentry/react'
 import './index.css'
 import App from './App.jsx'
 
-// Inicializar Sentry para el frontend
+// Initialize Sentry for frontend
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
   environment: import.meta.env.MODE,

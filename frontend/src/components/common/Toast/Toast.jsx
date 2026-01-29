@@ -11,21 +11,21 @@ import { ToastTypes } from '../../../context/ToastContext';
 import styles from './Toast.module.css';
 
 /**
- * Componente Toast individual
- * Muestra una notificación con animación de entrada y salida
+ * Individual Toast component
+ * Displays a notification with entry and exit animation
  */
 const Toast = ({ id, type, title, message, action, onClose }) => {
   const [isExiting, setIsExiting] = useState(false);
 
-  // Manejar cierre con animación
+  // Handle close with animation
   const handleClose = useCallback(() => {
     setIsExiting(true);
     setTimeout(() => {
       onClose(id);
-    }, 300); // Duración de la animación de salida
+    }, 300); // Exit animation duration
   }, [id, onClose]);
 
-  // Auto-remover al presionar Escape
+  // Auto-remove on Escape key press
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
@@ -37,7 +37,7 @@ const Toast = ({ id, type, title, message, action, onClose }) => {
     return () => window.removeEventListener('keydown', handleEscape);
   }, [handleClose]);
 
-  // Iconos según el tipo
+  // Icons by type
   const icons = {
     [ToastTypes.SUCCESS]: <MdCheckCircle className={styles.icon} />,
     [ToastTypes.ERROR]: <MdError className={styles.icon} />,

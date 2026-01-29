@@ -1,6 +1,6 @@
 /**
- * @fileoverview Hook de API
- * @description Hook personalizado para peticiones HTTP con estado, cache y errores
+ * @fileoverview API Hook
+ * @description Custom hook for HTTP requests with state, cache and error handling
  * @module hooks/useApi
  */
 
@@ -9,18 +9,18 @@ import { formatError, logError } from '../services/apiErrorHandler';
 import { useToast } from '../context/ToastContext';
 
 /**
- * Hook personalizado para manejar peticiones a la API
+ * Custom hook for handling API requests
  * 
- * Proporciona:
- * - Estado de loading/error/data
- * - Manejo automático de errores con toasts
- * - Cancelación automática al desmontar
- * - Retry manual
- * - Cache opcional
+ * Provides:
+ * - Loading/error/data state
+ * - Automatic error handling with toasts
+ * - Automatic cancellation on unmount
+ * - Manual retry
+ * - Optional cache
  * 
- * @param {Function} apiFunction - Función que retorna una promesa de Axios
- * @param {Object} options - Opciones de configuración
- * @returns {Object} Estado y funciones de la petición
+ * @param {Function} apiFunction - Function that returns an Axios promise
+ * @param {Object} options - Configuration options
+ * @returns {Object} Request state and functions
  * 
  * @example
  * const { data, loading, error, execute, retry } = useApi(
@@ -51,7 +51,7 @@ const useApi = (apiFunction, options = {}) => {
   const isMountedRef = useRef(true);
   const toast = useToast();
 
-  // Cleanup al desmontar
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
@@ -81,30 +81,30 @@ const useApi = (apiFunction, options = {}) => {
           return cacheRef.current;
         }
 
-        // Iniciar loading
+        // Start loading
         if (isMountedRef.current) {
           setLoading(true);
           setError(null);
         }
 
-        // Ejecutar función de API
+        // Execute API function
         const response = await apiFunction(...args, {
           signal: abortControllerRef.current.signal,
         });
 
-        // Actualizar estado solo si el componente sigue montado
+        // Update state only if component is still mounted
         if (isMountedRef.current) {
           const responseData = response.data;
           setData(responseData);
           setLoading(false);
           setExecutionCount(prev => prev + 1);
 
-          // Guardar en cache si está habilitado
+          // Save in cache if enabled
           if (cache) {
             cacheRef.current = responseData;
           }
 
-          // Mostrar toast de éxito si está habilitado
+          // Show success toast if enabled
           if (showSuccessToast) {
             toast.success(
               typeof successMessage === 'function' 
@@ -113,7 +113,7 @@ const useApi = (apiFunction, options = {}) => {
             );
           }
 
-          // Callback de éxito
+          // Success callback
           if (onSuccess) {
             onSuccess(responseData);
           }
@@ -121,7 +121,7 @@ const useApi = (apiFunction, options = {}) => {
           return responseData;
         }
       } catch (err) {
-        // Ignorar errores de cancelación
+        // Ignore cancellation errors
         if (err.name === 'AbortError' || err.message?.includes('cancel')) {
           return;
         }
@@ -136,7 +136,7 @@ const useApi = (apiFunction, options = {}) => {
             logError(err, apiFunction.name || 'useApi');
           }
 
-          // Mostrar toast de error si está habilitado
+          // Show error toast if enabled
           if (showErrorToast) {
             toast.error(formattedError.userMessage, {
               title: formattedError.type === 'VALIDATION' 
@@ -145,7 +145,7 @@ const useApi = (apiFunction, options = {}) => {
             });
           }
 
-          // Callback de error
+          // Error callback
           if (onError) {
             onError(formattedError);
           }
@@ -158,14 +158,14 @@ const useApi = (apiFunction, options = {}) => {
   );
 
   /**
-   * Reintentar la última petición
+   * Retry the last request
    */
   const retry = useCallback(() => {
     return execute();
   }, [execute]);
 
   /**
-   * Limpiar el estado
+   * Clear the state
    */
   const reset = useCallback(() => {
     setData(initialData);
@@ -175,19 +175,19 @@ const useApi = (apiFunction, options = {}) => {
   }, [initialData]);
 
   /**
-   * Invalidar cache
+   * Invalidate cache
    */
   const invalidateCache = useCallback(() => {
     cacheRef.current = null;
   }, []);
 
-  // Ejecutar inmediatamente si immediate === true
+  // Execute immediately if immediate === true
   useEffect(() => {
     if (immediate) {
       execute();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Solo al montar
+  }, []); // Only on mount
 
   return {
     data,

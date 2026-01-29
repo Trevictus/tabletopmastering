@@ -1,6 +1,6 @@
 /**
- * @fileoverview Controlador de Partidas
- * @description Maneja CRUD de partidas, resultados y calendario
+ * @fileoverview Match Controller
+ * @description Handles match CRUD, results and calendar
  * @module controllers/matchController
  * @requires ../services/matchService
  */
@@ -8,7 +8,7 @@
 const matchService = require('../services/matchService');
 
 /**
- * @desc    Crear una partida
+ * @desc    Create a match
  * @route   POST /api/matches
  * @access  Private
  */
@@ -38,7 +38,7 @@ exports.createMatch = async (req, res, next) => {
         message: error.message,
       });
     }
-    // Manejar errores de validación de Mongoose u otros errores
+    // Handle Mongoose validation errors or other errors
     if (error.message) {
       return res.status(400).json({
         success: false,
@@ -50,7 +50,7 @@ exports.createMatch = async (req, res, next) => {
 };
 
 /**
- * @desc    Listar partidas (con filtros)
+ * @desc    List matches (with filters)
  * @route   GET /api/matches
  * @access  Private
  */
@@ -86,7 +86,7 @@ exports.getMatches = async (req, res, next) => {
 };
 
 /**
- * @desc    Obtener una partida por ID
+ * @desc    Get a match by ID
  * @route   GET /api/matches/:id
  * @access  Private
  */
@@ -112,7 +112,7 @@ exports.getMatch = async (req, res, next) => {
 };
 
 /**
- * @desc    Actualizar partida
+ * @desc    Update match
  * @route   PUT /api/matches/:id
  * @access  Private
  */
@@ -139,7 +139,7 @@ exports.updateMatch = async (req, res, next) => {
 };
 
 /**
- * @desc    Registrar resultados de partida
+ * @desc    Register match results
  * @route   POST /api/matches/:id/finish
  * @access  Private
  */
@@ -175,7 +175,7 @@ exports.finishMatch = async (req, res, next) => {
 };
 
 /**
- * @desc    Confirmar asistencia a partida
+ * @desc    Confirm match attendance
  * @route   POST /api/matches/:id/confirm
  * @access  Private
  */
@@ -202,7 +202,7 @@ exports.confirmAttendance = async (req, res, next) => {
 };
 
 /**
- * @desc    Cancelar asistencia a partida
+ * @desc    Cancel match attendance
  * @route   DELETE /api/matches/:id/confirm
  * @access  Private
  */
@@ -229,7 +229,7 @@ exports.cancelAttendance = async (req, res, next) => {
 };
 
 /**
- * @desc    Eliminar partida
+ * @desc    Delete match
  * @route   DELETE /api/matches/:id
  * @access  Private
  */
@@ -256,7 +256,7 @@ exports.deleteMatch = async (req, res, next) => {
 };
 
 /**
- * @desc    Obtener ranking global de usuarios
+ * @desc    Get global user ranking
  * @route   GET /api/matches/ranking/global
  * @access  Private
  */
@@ -274,7 +274,7 @@ exports.getGlobalRanking = async (req, res, next) => {
 };
 
 /**
- * @desc    Obtener ranking de un grupo
+ * @desc    Get group ranking
  * @route   GET /api/matches/ranking/group/:groupId
  * @access  Private
  */

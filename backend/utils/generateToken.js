@@ -1,6 +1,6 @@
 /**
- * @fileoverview Generador de Tokens JWT
- * @description Crea tokens de autenticación firmados
+ * @fileoverview JWT Token Generator
+ * @description Creates signed authentication tokens
  * @module utils/generateToken
  * @requires jsonwebtoken
  */
@@ -8,9 +8,9 @@
 const jwt = require('jsonwebtoken');
 
 /**
- * Genera un token JWT
- * @param {string} id - ID del usuario
- * @returns {string} Token JWT
+ * Generates a JWT token
+ * @param {string} id - User ID
+ * @returns {string} JWT Token
  */
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {

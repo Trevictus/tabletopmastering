@@ -1,13 +1,13 @@
 /**
- * @fileoverview Servicio de Juegos
- * @description Operaciones CRUD de juegos e integración con BGG
+ * @fileoverview Game Service
+ * @description Game CRUD operations and BGG integration
  * @module services/gameService
  */
 
 import api from './api';
 
 const gameService = {
-  // Buscar juegos en BoardGameGeek
+  // Search games in BoardGameGeek
   searchBGG: async (query) => {
     const response = await api.get('/games/search-bgg', {
       params: { query },
@@ -15,19 +15,19 @@ const gameService = {
     return response.data;
   },
 
-  // Obtener detalles de un juego de BGG
+  // Get BGG game details
   getBGGDetails: async (bggId) => {
     const response = await api.get(`/games/bgg/${bggId}`);
     return response.data;
   },
 
-  // Obtener lista de juegos populares de BGG
+  // Get list of popular BGG games
   getBGGHotList: async () => {
     const response = await api.get('/games/bgg/hot');
     return response.data;
   },
 
-  // Añadir juego desde BGG
+  // Add game from BGG
   addFromBGG: async (bggId, groupId, notes) => {
     const response = await api.post('/games/add-from-bgg', {
       bggId,
@@ -37,49 +37,49 @@ const gameService = {
     return response.data;
   },
 
-  // Crear juego personalizado
+  // Create custom game
   createCustomGame: async (gameData) => {
     const response = await api.post('/games', gameData);
     return response.data;
   },
 
-  // Obtener lista de juegos con filtros
+  // Get games list with filters
   getGames: async (params = {}) => {
     const response = await api.get('/games', { params });
     return response.data;
   },
 
-  // Obtener detalles de un juego
+  // Get game details
   getGameById: async (gameId) => {
     const response = await api.get(`/games/${gameId}`);
     return response.data;
   },
 
-  // Actualizar juego
+  // Update game
   updateGame: async (gameId, gameData) => {
     const response = await api.put(`/games/${gameId}`, gameData);
     return response.data;
   },
 
-  // Sincronizar juego con BGG
+  // Sync game with BGG
   syncWithBGG: async (gameId) => {
     const response = await api.put(`/games/${gameId}/sync-bgg`);
     return response.data;
   },
 
-  // Eliminar juego
+  // Delete game
   deleteGame: async (gameId) => {
     const response = await api.delete(`/games/${gameId}`);
     return response.data;
   },
 
-  // Obtener estadísticas de juegos del grupo
+  // Get group game statistics
   getGroupStats: async (groupId) => {
     const response = await api.get(`/games/stats/${groupId}`);
     return response.data;
   },
 
-  // Subir imagen para un juego
+  // Upload game image
   uploadGameImage: async (gameId, imageFile) => {
     const formData = new FormData();
     formData.append('image', imageFile);

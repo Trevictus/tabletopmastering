@@ -20,47 +20,47 @@ import gameService from '../../services/gameService';
 import styles from './Games.module.css';
 
 /**
- * Página de gestión de juegos
- * Lista todos los juegos del grupo con filtros, búsqueda y paginación
+ * Games management page
+ * Lists all group games with filters, search and pagination
  */
 const Games = () => {
   const navigate = useNavigate();
   const { selectedGroup, groups, loadGroups, selectGroup } = useGroup();
   const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(true); // Empezar en true para carga inicial
+  const [loading, setLoading] = useState(true); // Start with true for initial load
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [error, setError] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // Filtros y búsqueda
+  // Filters and search
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sourceFilter, setSourceFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Paginación
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalGames, setTotalGames] = useState(0);
   
-  // Ref para evitar doble carga
+  // Ref to avoid double loading
   const loadingRef = useRef(false);
   const mountedRef = useRef(true);
 
-  // Cleanup al desmontar
+  // Cleanup on unmount
   useEffect(() => {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
 
-  // Cargar grupos al montar (solo si no hay grupos cargados)
+  // Load groups on mount (only if no groups loaded)
   useEffect(() => {
     if (groups.length === 0) {
       loadGroups();
     }
   }, [groups.length, loadGroups]);
 
-  // Debounce para búsqueda - SOLO actualiza debouncedSearch
+  // Debounce for search - ONLY updates debouncedSearch
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -68,19 +68,19 @@ const Games = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Reset página cuando cambia búsqueda o filtro
+  // Reset page when search or filter changes
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedSearch, sourceFilter, selectedGroup]);
 
-  // Cargar juegos - ÚNICO efecto para cargar datos
+  // Load games - ONLY effect for loading data
   useEffect(() => {
     const loadGames = async () => {
-      // Evitar cargas duplicadas
+      // Avoid duplicate loads
       if (loadingRef.current) return;
       loadingRef.current = true;
 
-      // Solo mostrar loading en primera carga o cambio de grupo
+      // Only show loading on first load or group change
       if (isFirstLoad) {
         setLoading(true);
       }
@@ -118,7 +118,7 @@ const Games = () => {
     loadGames();
   }, [selectedGroup?._id, currentPage, sourceFilter, debouncedSearch, isFirstLoad]);
 
-  // Handlers - definidos antes del useMemo para poder usarlos
+  // Handlers - defined before useMemo so they can be used
   const handleGameAdded = useCallback((newGame) => {
     setGames(prev => [newGame, ...prev]);
     setTotalGames(prev => prev + 1);
@@ -157,7 +157,7 @@ const Games = () => {
     setCurrentPage(1);
   }, []);
 
-  // Memoizar la lista de juegos para evitar re-renders innecesarios
+  // Memoize the games list to avoid unnecessary re-renders
   const renderedGames = useMemo(() => (
     games.map((game) => (
       <GameCard

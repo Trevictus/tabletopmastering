@@ -1,41 +1,43 @@
 /**
- * @fileoverview Configuración de conexión a MongoDB
- * @description Establece y gestiona la conexión con la base de datos MongoDB
+ * @fileoverview MongoDB connection configuration
+ * @description Establishes and manages MongoDB database connection
  * @module config/database
  * @requires mongoose
  */
 
 const mongoose = require('mongoose');
+const { createLogger } = require('../utils/logger');
+
+const logger = createLogger('Database');
 
 /**
- * Conecta a la base de datos MongoDB
+ * Connect to MongoDB database
  * @async
  * @function connectDB
  * @returns {Promise<void>}
- * @throws {Error} Si no puede conectar a MongoDB
+ * @throws {Error} If unable to connect to MongoDB
  */
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      // Opciones recomendadas para MongoDB
       serverSelectionTimeoutMS: 5000,
     });
 
-    console.log(`✅ MongoDB conectado: ${conn.connection.host}`);
-    console.log(`📊 Base de datos: ${conn.connection.name}`);
+    logger.info(`MongoDB connected: ${conn.connection.host}`);
+    logger.info(`Database: ${conn.connection.name}`);
   } catch (error) {
-    console.error(`❌ Error al conectar a MongoDB: ${error.message}`);
+    logger.error(`Failed to connect to MongoDB: ${error.message}`);
     process.exit(1);
   }
 };
 
-// Eventos de la conexión
+// Connection events
 mongoose.connection.on('disconnected', () => {
-  console.log('⚠️  MongoDB desconectado');
+  logger.warn('MongoDB disconnected');
 });
 
 mongoose.connection.on('error', (err) => {
-  console.error(`❌ Error en la conexión de MongoDB: ${err}`);
+  logger.error(`MongoDB connection error: ${err}`);
 });
 
 module.exports = connectDB;

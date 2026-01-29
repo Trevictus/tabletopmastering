@@ -1,38 +1,38 @@
 /**
- * @fileoverview Logger personalizado para desarrollo
- * @description Sistema de logging minimalista con niveles y colores
+ * @fileoverview Custom logger for development
+ * @description Minimalist logging system with levels and colors
  * @module utils/logger
  */
 
 const isDev = import.meta.env.DEV;
 
 const COLORS = {
-  info: '#0ea5e9',      // Azul
-  warn: '#eab308',      // Amarillo
-  error: '#ef4444',     // Rojo
-  debug: '#8b5cf6',     // Púrpura
-  success: '#22c55e',   // Verde
+  info: '#0ea5e9',      // Blue
+  warn: '#eab308',      // Yellow
+  error: '#ef4444',     // Red
+  debug: '#8b5cf6',     // Purple
+  success: '#22c55e',   // Green
 };
 
 /**
- * Logger personalizado con niveles y módulos
- * Solo muestra logs en desarrollo
+ * Custom logger with levels and modules
+ * Only shows logs in development
  * 
  * @example
  * const logger = new Logger('AuthService');
- * logger.info('Usuario autenticado');
- * logger.error('Error de conexión', { status: 500 });
+ * logger.info('User authenticated');
+ * logger.error('Connection error', { status: 500 });
  */
 class Logger {
   /**
-   * @param {string} module - Nombre del módulo (para identificación)
+   * @param {string} module - Module name (for identification)
    */
   constructor(module) {
     this.module = module;
   }
 
   /**
-   * Log base con nivel y datos opcionales
+   * Base log with level and optional data
    * @private
    */
   log(level, message, data = null) {
@@ -50,45 +50,45 @@ class Logger {
   }
 
   /**
-   * Log informativo
+   * Info log
    * @param {string} message
-   * @param {*} data - Datos adicionales opcionales
+   * @param {*} data - Optional additional data
    */
   info(message, data) {
     this.log('info', message, data);
   }
 
   /**
-   * Log de advertencia
+   * Warning log
    * @param {string} message
-   * @param {*} data - Datos adicionales opcionales
+   * @param {*} data - Optional additional data
    */
   warn(message, data) {
     this.log('warn', message, data);
   }
 
   /**
-   * Log de error
+   * Error log
    * @param {string} message
-   * @param {*} data - Datos adicionales opcionales
+   * @param {*} data - Optional additional data
    */
   error(message, data) {
     this.log('error', message, data);
   }
 
   /**
-   * Log de depuración
+   * Debug log
    * @param {string} message
-   * @param {*} data - Datos adicionales opcionales
+   * @param {*} data - Optional additional data
    */
   debug(message, data) {
     this.log('debug', message, data);
   }
 
   /**
-   * Log de éxito
+   * Success log
    * @param {string} message
-   * @param {*} data - Datos adicionales opcionales
+   * @param {*} data - Optional additional data
    */
   success(message, data) {
     this.log('success', message, data);

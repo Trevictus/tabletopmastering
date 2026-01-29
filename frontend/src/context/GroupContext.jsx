@@ -11,12 +11,12 @@ import useGroupStore from '../stores/groupStore';
 const GroupContext = createContext(null);
 
 /**
- * Hook personalizado para acceder al contexto de grupos
- * Actúa como wrapper sobre el store de Zustand para compatibilidad
- * @returns {Object} Contexto de grupos
+ * Custom hook to access group context
+ * Acts as wrapper over Zustand store for compatibility
+ * @returns {Object} Group context
  */
 export const useGroup = () => {
-  // Usar directamente el store de Zustand
+  // Use Zustand store directly
   const selectedGroup = useGroupStore((state) => state.selectedGroup);
   const groups = useGroupStore((state) => state.groups);
   const loading = useGroupStore((state) => state.loading);
@@ -37,11 +37,11 @@ export const useGroup = () => {
 };
 
 /**
- * Proveedor del contexto de grupos
- * Mantiene compatibilidad con el sistema anterior
+ * Group context provider
+ * Maintains compatibility with the previous system
  */
 export const GroupProvider = ({ children }) => {
-  // El valor del contexto es solo un marcador para verificar el provider
+  // The context value is just a marker to verify the provider
   return (
     <GroupContext.Provider value={true}>
       {children}

@@ -12,11 +12,11 @@ import Loading from '../../components/common/Loading';
 import { isValidAvatar } from '../../utils/validators';
 import styles from './Groups.module.css';
 
-// Límite máximo de grupos por usuario (debe coincidir con el backend)
+// Maximum number of groups per user (must match the backend)
 const MAX_GROUPS = 7;
 
 /**
- * Página de Grupos - Lista y gestión de grupos
+ * Groups Page - List and group management
  */
 const Groups = () => {
   const navigate = useNavigate();
@@ -79,7 +79,7 @@ const Groups = () => {
         setInviteCode('');
         setShowJoinModal(false);
         
-        // Recargar los grupos
+        // Reload groups
         await loadGroups();
       }
     } catch (err) {

@@ -1,21 +1,21 @@
 /**
- * Punto de entrada centralizado para el sistema de autenticación
- * Exporta todos los elementos necesarios para usar la autenticación en la app
+ * Centralized entry point for authentication system
+ * Exports all necessary elements to use authentication in the app
  *
  * @example
- * // Importar todo lo necesario desde un solo lugar
+ * // Import everything needed from a single place
  * import { useAuth, AuthProvider, AUTH_ROUTES, STORAGE_KEYS } from './auth';
  */
 
-// Context y Hooks
+// Context and Hooks
 export { useAuth, AuthProvider } from './context/AuthContext';
 export { useAuthValidation } from './hooks/useAuthValidation';
 
-// Servicios
+// Services
 export { default as authService } from './services/authService';
 export { default as api } from './services/api';
 
-// Constantes
+// Constants
 export {
   STORAGE_KEYS,
   AUTH_ERRORS,
@@ -25,7 +25,7 @@ export {
   USER_ROLES,
 } from './constants/auth';
 
-// Componentes de utilidad (si existen)
+// Utility components (if they exist)
 // export { default as ProtectedRoute } from './components/routes/ProtectedRoute';
 // export { default as PublicRoute } from './components/routes/PublicRoute';
 // export { default as UserInfo } from './components/common/UserInfo';

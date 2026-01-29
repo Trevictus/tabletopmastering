@@ -1,6 +1,6 @@
 /**
- * @fileoverview Servicio de Juegos BGG
- * @description Integración con BoardGameGeek API para búsqueda e importación de juegos
+ * @fileoverview BGG Game Service
+ * @description BoardGameGeek API integration for game search and import
  * @module services/bggGameService
  * @requires ../models/Game
  * @requires ../models/Group
@@ -12,7 +12,7 @@ const Group = require('../models/Group');
 const bggService = require('./bggService');
 
 /**
- * Validar y obtener acceso al grupo para operaciones BGG (optimizado)
+ * Validate and get group access for BGG operations (optimized)
  */
 exports.validateGroupAccess = async (groupId, userId) => {
   if (!groupId) {
@@ -40,7 +40,7 @@ exports.validateGroupAccess = async (groupId, userId) => {
 };
 
 /**
- * Buscar juegos en BoardGameGeek (sin guardar)
+ * Search games in BoardGameGeek (without saving)
  */
 exports.searchBGGGames = async (name, exact = false) => {
   if (!name) {
@@ -53,7 +53,7 @@ exports.searchBGGGames = async (name, exact = false) => {
 };
 
 /**
- * Obtener detalles de un juego de BGG por ID
+ * Get BGG game details by ID
  */
 exports.getBGGGameDetails = async (bggId) => {
   if (!bggId || isNaN(bggId)) {
@@ -66,15 +66,15 @@ exports.getBGGGameDetails = async (bggId) => {
 };
 
 /**
- * Añadir un juego de BGG (optimizado)
+ * Add a game from BGG (optimized)
  */
 exports.addBGGGame = async (bggId, userId, groupId = null, customNotes = '') => {
-  // Validaciones
+  // Validations
   if (!bggId) {
     throw new Error('El ID de BGG es obligatorio');
   }
 
-  // Verificar que el grupo existe y el usuario es miembro o admin (si se proporciona)
+  // Verify group exists and user is member or admin (if provided)
   if (groupId) {
     const group = await Group.findById(groupId)
       .select('admin members.user')
@@ -93,7 +93,7 @@ exports.addBGGGame = async (bggId, userId, groupId = null, customNotes = '') => 
       throw { status: 403, message: 'No eres miembro de este grupo' };
     }
 
-    // Verificar si el juego ya existe en el grupo (optimizado con exists)
+    // Check if game already exists in group (optimized with exists)
     const existingGame = await Game.findOne({ 
       bggId: bggId, 
       group: groupId,
@@ -110,7 +110,7 @@ exports.addBGGGame = async (bggId, userId, groupId = null, customNotes = '') => 
       };
     }
   } else {
-    // Si no hay grupo, verificar si el usuario ya tiene este juego de forma personal
+    // If no group, check if user already has this game personally
     const existingGame = await Game.findOne({ 
       bggId: bggId, 
       addedBy: userId,
@@ -129,10 +129,10 @@ exports.addBGGGame = async (bggId, userId, groupId = null, customNotes = '') => 
     }
   }
 
-  // Obtener detalles del juego desde BGG
+  // Get game details from BGG
   const bggData = await bggService.getGameDetails(parseInt(bggId));
 
-  // Crear el juego en la base de datos
+  // Create game in database
   const game = await Game.create({
     ...bggData,
     group: groupId || null,
@@ -141,7 +141,7 @@ exports.addBGGGame = async (bggId, userId, groupId = null, customNotes = '') => 
     isActive: true,
   });
 
-  // Verificar que el juego se guardó y devolver con populate mínimo
+  // Verify game was saved and return with minimal populate
   const savedGame = await Game.findById(game._id)
     .select('name image thumbnail minPlayers maxPlayers playingTime categories rating source bggId addedBy group createdAt')
     .populate('addedBy', 'name -_id')
@@ -156,7 +156,7 @@ exports.addBGGGame = async (bggId, userId, groupId = null, customNotes = '') => 
 };
 
 /**
- * Sincronizar juego de BGG (actualizar datos) - optimizado
+ * Sync BGG game (update data) - optimized
  */
 exports.syncBGGGame = async (gameId, userId) => {
   const game = await Game.findOne({ _id: gameId, isActive: true })
@@ -170,7 +170,7 @@ exports.syncBGGGame = async (gameId, userId) => {
     throw new Error('Este endpoint solo funciona con juegos de BGG');
   }
 
-  // Verificar permisos si tiene grupo
+  // Verify permissions if has group
   if (game.group) {
     const group = await Group.findById(game.group)
       .select('admin members.user')
@@ -189,10 +189,10 @@ exports.syncBGGGame = async (gameId, userId) => {
     }
   }
 
-  // Obtener datos actualizados de BGG
+  // Get updated data from BGG
   const bggData = await bggService.getGameDetails(game.bggId);
 
-  // Usar findByIdAndUpdate para una actualización atómica y eficiente
+  // Use findByIdAndUpdate for atomic and efficient update
   const updatedGame = await Game.findByIdAndUpdate(
     gameId,
     {
@@ -229,7 +229,7 @@ exports.syncBGGGame = async (gameId, userId) => {
 };
 
 /**
- * Obtener juegos populares de BGG
+ * Get popular BGG games
  */
 exports.getHotGames = async (limit = 10) => {
   const hotGames = await bggService.getHotGames(parseInt(limit));

@@ -1,6 +1,6 @@
 /**
- * @fileoverview Manejador de Errores de API
- * @description Utilidades para categorización y formateo de errores HTTP
+ * @fileoverview API Error Handler
+ * @description Utilities for HTTP error categorization and formatting
  * @module services/apiErrorHandler
  */
 
@@ -9,16 +9,16 @@ import Logger from '../utils/logger';
 const logger = new Logger('APIErrorHandler');
 
 /**
- * Utilidades para manejo centralizado de errores de API
+ * Utilities for centralized API error handling
  * 
- * Proporciona funciones helper para:
- * - Extraer mensajes de error consistentes
- * - Categorizar tipos de errores
- * - Formatear errores para UI
+ * Provides helper functions to:
+ * - Extract consistent error messages
+ * - Categorize error types
+ * - Format errors for UI
  */
 
 /**
- * Tipos de errores clasificados
+ * Classified error types
  */
 export const ErrorTypes = {
   NETWORK: 'network',
@@ -33,7 +33,7 @@ export const ErrorTypes = {
 };
 
 /**
- * Mensajes de error por defecto en español
+ * Default error messages in Spanish (user-facing)
  */
 const DEFAULT_ERROR_MESSAGES = {
   [ErrorTypes.NETWORK]: 'Error de conexión. Verifica tu conexión a internet.',
@@ -48,13 +48,13 @@ const DEFAULT_ERROR_MESSAGES = {
 };
 
 /**
- * Determina el tipo de error basado en el objeto de error
+ * Determines error type based on error object
  * 
- * @param {Object} error - Error de Axios
- * @returns {string} Tipo de error
+ * @param {Object} error - Axios error
+ * @returns {string} Error type
  */
 export const getErrorType = (error) => {
-  // Error de red (sin respuesta)
+  // Network error (no response)
   if (!error.response) {
     if (error.code === 'ECONNABORTED') {
       return ErrorTypes.TIMEOUT;
@@ -68,7 +68,7 @@ export const getErrorType = (error) => {
     return ErrorTypes.NETWORK;
   }
 
-  // Errores con respuesta del servidor
+  // Errors with server response
   const status = error.response.status;
 
   switch (status) {
@@ -92,55 +92,55 @@ export const getErrorType = (error) => {
 };
 
 /**
- * Extrae el mensaje de error del objeto de error
+ * Extracts error message from error object
  * 
- * @param {Object} error - Error de Axios
- * @returns {string} Mensaje de error legible
+ * @param {Object} error - Axios error
+ * @returns {string} Human-readable error message
  */
 export const getErrorMessage = (error) => {
   const errorType = getErrorType(error);
 
-  // Si hay un mensaje específico del servidor, usarlo
+  // If there's a specific server message, use it
   if (error.response?.data?.message) {
     return error.response.data.message;
   }
 
-  // Si hay errores de validación detallados
+  // If there are detailed validation errors
   if (error.response?.data?.errors) {
     const validationErrors = error.response.data.errors;
     
-    // Si es un objeto de errores
+    // If it's an errors object
     if (typeof validationErrors === 'object' && !Array.isArray(validationErrors)) {
       const firstError = Object.values(validationErrors)[0];
       return Array.isArray(firstError) ? firstError[0] : firstError;
     }
     
-    // Si es un array de errores
+    // If it's an errors array
     if (Array.isArray(validationErrors)) {
       return validationErrors[0]?.msg || validationErrors[0];
     }
   }
 
-  // Mensaje por defecto según el tipo
+  // Default message based on type
   return DEFAULT_ERROR_MESSAGES[errorType];
 };
 
 /**
- * Extrae todos los errores de validación
+ * Extracts all validation errors
  * 
- * @param {Object} error - Error de Axios
- * @returns {Object} Objeto con campos y sus errores
+ * @param {Object} error - Axios error
+ * @returns {Object} Object with fields and their errors
  */
 export const getValidationErrors = (error) => {
   if (error.response?.data?.errors) {
     const errors = error.response.data.errors;
     
-    // Si ya es un objeto campo -> error, retornarlo
+    // If already field -> error object, return it
     if (typeof errors === 'object' && !Array.isArray(errors)) {
       return errors;
     }
     
-    // Si es un array de errores, convertir a objeto
+    // If errors array, convert to object
     if (Array.isArray(errors)) {
       return errors.reduce((acc, err) => {
         if (err.param) {

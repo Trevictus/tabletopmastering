@@ -15,28 +15,28 @@ const ImageUploader = ({ gameId, currentImage, onImageUploaded }) => {
     
     if (!file) return;
 
-    // Validar tipo de archivo
+    // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
       showToast('Solo se permiten imágenes (JPEG, PNG, GIF, WEBP)', 'error');
       return;
     }
 
-    // Validar tamaño (5MB máximo)
+    // Validate size (5MB max)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       showToast('La imagen no puede superar los 5MB', 'error');
       return;
     }
 
-    // Mostrar preview
+    // Show preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreview(reader.result);
     };
     reader.readAsDataURL(file);
 
-    // Subir imagen
+    // Upload image
     try {
       setUploading(true);
       const response = await gameService.uploadGameImage(gameId, file);
@@ -47,12 +47,12 @@ const ImageUploader = ({ gameId, currentImage, onImageUploaded }) => {
         onImageUploaded(response.data.imageUrl);
       }
     } catch (error) {
-      console.error('Error al subir imagen:', error);
+      console.error('Error uploading image:', error);
       showToast(
         error.response?.data?.message || 'Error al subir la imagen',
         'error'
       );
-      // Restaurar preview anterior
+      // Restore previous preview
       setPreview(currentImage);
     } finally {
       setUploading(false);

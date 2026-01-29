@@ -1,6 +1,6 @@
 /**
- * @fileoverview Controlador de Grupos
- * @description Maneja CRUD de grupos, miembros, invitaciones y permisos
+ * @fileoverview Group Controller
+ * @description Handles group CRUD, members, invitations and permissions
  * @module controllers/groupController
  * @requires ../models/Group
  * @requires ../models/User
@@ -22,11 +22,11 @@ const {
   groupPopulateOptionsSimple,
 } = require('../utils/groupHelpers');
 
-// Límite máximo de grupos por usuario
+// Maximum number of groups per user
 const MAX_GROUPS_PER_USER = 7;
 
 /**
- * @desc    Crear un nuevo grupo
+ * @desc    Create a new group
  * @route   POST /api/groups
  * @access  Private
  */
@@ -34,7 +34,7 @@ const createGroup = async (req, res, next) => {
   try {
     const { name, description, avatar, settings } = req.body;
 
-    // Verificar límite de grupos del usuario
+    // Check user group limit
     const userGroupCount = await Group.countDocuments({
       'members.user': req.user._id,
       isActive: true
@@ -47,10 +47,10 @@ const createGroup = async (req, res, next) => {
       });
     }
 
-    // Generar código de invitación único
+    // Generate unique invitation code
     const inviteCode = await generateUniqueInviteCode();
 
-    // Crear el grupo (el middleware pre-save añade automáticamente al admin como miembro)
+    // Create the group (pre-save middleware automatically adds admin as member)
     const group = await Group.create({
       name,
       description,
@@ -60,10 +60,10 @@ const createGroup = async (req, res, next) => {
       settings,
     });
 
-    // Añadir el grupo al array de grupos del usuario
+    // Add the group to the user's groups array
     await addGroupToUser(req.user._id, group._id);
 
-    // Populate para devolver datos completos
+    // Populate to return complete data
     await group.populate(groupPopulateOptions);
 
     res.status(201).json({
@@ -77,7 +77,7 @@ const createGroup = async (req, res, next) => {
 };
 
 /**
- * @desc    Obtener todos los grupos del usuario
+ * @desc    Get all user's groups
  * @route   GET /api/groups
  * @access  Private
  */
@@ -101,13 +101,13 @@ const getMyGroups = async (req, res, next) => {
 };
 
 /**
- * @desc    Obtener un grupo por ID
+ * @desc    Get a group by ID
  * @route   GET /api/groups/:id
  * @access  Private
  */
 const getGroup = async (req, res, next) => {
   try {
-    // El grupo ya viene del middleware isGroupMember
+    // Group already comes from isGroupMember middleware
     const group = req.group || await Group.findById(req.params.id)
       .populate(groupPopulateOptions);
 
@@ -121,7 +121,7 @@ const getGroup = async (req, res, next) => {
 };
 
 /**
- * @desc    Unirse a un grupo mediante código de invitación
+ * @desc    Join a group via invitation code
  * @route   POST /api/groups/join
  * @access  Private
  */
@@ -138,7 +138,7 @@ const joinGroup = async (req, res, next) => {
       });
     }
 
-    // Verificar si ya es miembro
+    // Verify if already a member
     if (group.isMember(req.user._id)) {
       return res.status(400).json({
         success: false,
@@ -146,7 +146,7 @@ const joinGroup = async (req, res, next) => {
       });
     }
 
-    // Verificar límite de grupos del usuario
+    // Verify user's group limit
     const userGroupCount = await Group.countDocuments({
       'members.user': req.user._id,
       isActive: true
@@ -159,7 +159,7 @@ const joinGroup = async (req, res, next) => {
       });
     }
 
-    // Verificar límite de miembros
+    // Verify member limit
     if (!group.canAcceptMoreMembers()) {
       return res.status(400).json({
         success: false,
@@ -167,10 +167,10 @@ const joinGroup = async (req, res, next) => {
       });
     }
 
-    // Añadir al usuario al grupo
+    // Add user to group
     await addMemberToGroup(group, req.user._id);
 
-    // Populate para devolver datos completos
+    // Populate to return complete data
     await group.populate(groupPopulateOptions);
 
     res.status(200).json({
@@ -184,25 +184,25 @@ const joinGroup = async (req, res, next) => {
 };
 
 /**
- * @desc    Actualizar información del grupo
+ * @desc    Update group information
  * @route   PUT /api/groups/:id
- * @access  Private (Admin del grupo)
+ * @access  Private (Group Admin)
  */
 const updateGroup = async (req, res, next) => {
   try {
     const { name, description, avatar, settings } = req.body;
 
-    // El grupo ya viene del middleware isGroupAdmin
+    // Group already comes from isGroupAdmin middleware
     const group = req.group || await Group.findById(req.params.id);
 
-    // Actualizar campos
+    // Update fields
     if (name) group.name = name;
     if (description !== undefined) group.description = description;
     if (avatar !== undefined) group.avatar = avatar;
     if (settings) {
       if (settings.isPrivate !== undefined) group.settings.isPrivate = settings.isPrivate;
       if (settings.maxMembers !== undefined) {
-        // Validar que el nuevo límite no sea menor que el número actual de miembros
+        // Validate that the new limit is not less than the current member count
         if (settings.maxMembers < group.memberCount) {
           return res.status(400).json({
             success: false,
@@ -230,16 +230,16 @@ const updateGroup = async (req, res, next) => {
 };
 
 /**
- * @desc    Regenerar código de invitación
+ * @desc    Regenerate invitation code
  * @route   PUT /api/groups/:id/invite-code
- * @access  Private (Admin del grupo)
+ * @access  Private (Group Admin)
  */
 const regenerateInviteCode = async (req, res, next) => {
   try {
-    // El grupo ya viene del middleware isGroupAdmin
+    // Group already comes from isGroupAdmin middleware
     const group = req.group || await Group.findById(req.params.id);
 
-    // Generar nuevo código único
+    // Generate new unique code
     group.inviteCode = await generateUniqueInviteCode();
     await group.save();
 
@@ -256,20 +256,20 @@ const regenerateInviteCode = async (req, res, next) => {
 };
 
 /**
- * @desc    Obtener miembros del grupo
+ * @desc    Get group members
  * @route   GET /api/groups/:id/members
- * @access  Private (Miembro del grupo)
+ * @access  Private (Group Member)
  */
 const getMembers = async (req, res, next) => {
   try {
-    // El grupo ya viene del middleware isGroupMember
+    // Group already comes from isGroupMember middleware
     let group = req.group;
     
     if (!group) {
       group = await Group.findById(req.params.id)
         .populate('members.user', 'name email avatar stats createdAt');
     } else if (!group.members[0].user.name) {
-      // Si el grupo no tiene los miembros populados, popular
+      // If group doesn't have populated members, populate them
       await group.populate('members.user', 'name email avatar stats createdAt');
     }
 
@@ -284,15 +284,15 @@ const getMembers = async (req, res, next) => {
 };
 
 /**
- * @desc    Expulsar miembro del grupo
+ * @desc    Remove member from group
  * @route   DELETE /api/groups/:id/members/:userId
- * @access  Private (Admin del grupo)
+ * @access  Private (Group Admin)
  */
 const removeMember = async (req, res, next) => {
   try {
     const { userId } = req.params;
 
-    // El grupo ya viene del middleware isGroupAdmin
+    // Group already comes from isGroupAdmin middleware
     const group = req.group || await Group.findById(req.params.id);
 
     try {
@@ -314,9 +314,9 @@ const removeMember = async (req, res, next) => {
 };
 
 /**
- * @desc    Salir del grupo
+ * @desc    Leave the group
  * @route   DELETE /api/groups/:id/leave
- * @access  Private (Miembro del grupo)
+ * @access  Private (Group Member)
  */
 const leaveGroup = async (req, res, next) => {
   try {
@@ -329,7 +329,7 @@ const leaveGroup = async (req, res, next) => {
       });
     }
 
-    // Verificar que el usuario sea miembro
+    // Verify that the user is a member
     if (!group.isMember(req.user._id)) {
       return res.status(404).json({
         success: false,
@@ -337,14 +337,14 @@ const leaveGroup = async (req, res, next) => {
       });
     }
 
-    // Si es admin y hay más miembros, transferir admin al miembro más antiguo
+    // If admin and there are more members, transfer admin to the oldest member
     if (group.isAdmin(req.user._id)) {
       const otherMembers = group.members.filter(
         m => m.user._id.toString() !== req.user._id.toString()
       );
       
       if (otherMembers.length > 0) {
-        // Ordenar por fecha de unión y asignar al más antiguo
+        // Sort by join date and assign to the oldest
         otherMembers.sort((a, b) => new Date(a.joinedAt) - new Date(b.joinedAt));
         const newAdmin = otherMembers[0];
         
@@ -352,10 +352,10 @@ const leaveGroup = async (req, res, next) => {
         newAdmin.role = 'admin';
         await group.save();
       }
-      // Si no hay otros miembros, el grupo quedará sin admin (o se podría eliminar)
+      // If no other members, group will be left without admin (or could be deleted)
     }
 
-    // Eliminar miembro
+    // Remove member
     await removeMemberFromGroup(group, req.user._id);
 
     res.status(200).json({
@@ -368,20 +368,20 @@ const leaveGroup = async (req, res, next) => {
 };
 
 /**
- * @desc    Eliminar grupo
+ * @desc    Delete group
  * @route   DELETE /api/groups/:id
- * @access  Private (Admin del grupo)
+ * @access  Private (Group Admin)
  */
 const deleteGroup = async (req, res, next) => {
   try {
-    // El grupo ya viene del middleware isGroupAdmin
+    // Group already comes from isGroupAdmin middleware
     const group = req.group || await Group.findById(req.params.id);
 
-    // Marcar como inactivo en lugar de eliminar (soft delete)
+    // Mark as inactive instead of deleting (soft delete)
     group.isActive = false;
     await group.save();
 
-    // Remover el grupo del array de grupos de todos los usuarios
+    // Remove the group from all users' groups array
     const memberIds = group.members.map((member) => member.user);
     await removeGroupFromAllMembers(memberIds, group._id);
 
@@ -395,15 +395,15 @@ const deleteGroup = async (req, res, next) => {
 };
 
 /**
- * @desc    Invitar usuario a un grupo por email
+ * @desc    Invite user to a group by email
  * @route   POST /api/groups/:id/invite
- * @access  Private (Admin del grupo)
+ * @access  Private (Group Admin)
  */
 const inviteUserToGroup = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    // Validar que el email esté presente
+    // Validate that email is present
     if (!email || !email.trim()) {
       return res.status(400).json({
         success: false,
@@ -411,7 +411,7 @@ const inviteUserToGroup = async (req, res, next) => {
       });
     }
 
-    // El grupo ya viene del middleware isGroupAdmin
+    // Group already comes from isGroupAdmin middleware
     const group = req.group || await Group.findById(req.params.id);
 
     if (!group || !group.isActive) {
@@ -421,7 +421,7 @@ const inviteUserToGroup = async (req, res, next) => {
       });
     }
 
-    // Buscar el usuario por email
+    // Find user by email
     const userToInvite = await User.findOne({ email: email.toLowerCase() });
 
     if (!userToInvite) {
@@ -431,7 +431,7 @@ const inviteUserToGroup = async (req, res, next) => {
       });
     }
 
-    // Verificar si ya es miembro
+    // Verify if already a member
     if (group.isMember(userToInvite._id)) {
       return res.status(400).json({
         success: false,
@@ -439,7 +439,7 @@ const inviteUserToGroup = async (req, res, next) => {
       });
     }
 
-    // Verificar límite de miembros
+    // Verify member limit
     if (!group.canAcceptMoreMembers()) {
       return res.status(400).json({
         success: false,
@@ -447,10 +447,10 @@ const inviteUserToGroup = async (req, res, next) => {
       });
     }
 
-    // Añadir al usuario al grupo
+    // Add user to group
     await addMemberToGroup(group, userToInvite._id);
 
-    // Populate para devolver datos completos
+    // Populate to return complete data
     await group.populate(groupPopulateOptions);
 
     res.status(200).json({
@@ -464,7 +464,7 @@ const inviteUserToGroup = async (req, res, next) => {
 };
 
 /**
- * @desc    Obtener información pública de un grupo por ID (sin requerir ser miembro)
+ * @desc    Get public group information by ID (without requiring membership)
  * @route   GET /api/groups/public/:id
  * @access  Public
  */

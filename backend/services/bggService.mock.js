@@ -1,16 +1,19 @@
 /**
- * Mock del servicio BGG para tests y desarrollo
- * Este servicio simula las respuestas de BoardGameGeek sin hacer llamadas reales a la API
+ * BGG Service Mock for tests and development
+ * This service simulates BoardGameGeek responses without making real API calls
  * 
- * @description Proporciona datos de prueba estáticos para desarrollo local cuando
- * la variable de entorno USE_BGG_MOCK=true está activa
+ * @description Provides static test data for local development when
+ * USE_BGG_MOCK=true environment variable is active
  * @version 3.0.0
  * @author TableTopMastering Team
  */
 
+const { createLogger } = require('../utils/logger');
+const logger = createLogger('BGGMock');
+
 /**
- * Configuración de imágenes OFICIALES de cada juego de mesa
- * URLs estables desde CDNs públicos (BoardGameAtlas S3, Wikimedia, etc.)
+ * Official game image configuration
+ * Stable URLs from public CDNs (BoardGameAtlas S3, Wikimedia, etc.)
  */
 const GAME_IMAGES = Object.freeze({
   // Catan - Portada oficial del juego
@@ -473,7 +476,7 @@ class MockBGGService {
   }
 
   async searchGames(query, exact = false) {
-    console.log(`[MOCK BGG] Searching for: "${query}", exact: ${exact}`);
+    logger.debug(`Searching for: "${query}", exact: ${exact}`);
     await this.#sleep(150);
 
     const searchTerm = query.toLowerCase();
@@ -507,12 +510,12 @@ class MockBGGService {
       });
     }
 
-    console.log(`[MOCK BGG] Found ${results.length} result(s)`);
+    logger.debug(`Found ${results.length} result(s)`);
     return results;
   }
 
   async getGameDetails(bggId) {
-    console.log(`[MOCK BGG] Getting details for bggId: ${bggId}`);
+    logger.debug(`Getting details for bggId: ${bggId}`);
     await this.#sleep(100);
 
     const game = this.#getGame(bggId);
@@ -525,7 +528,7 @@ class MockBGGService {
   }
 
   async getHotGames(limit = 10) {
-    console.log(`[MOCK BGG] Getting hot games, limit: ${limit}`);
+    logger.debug(`Getting hot games, limit: ${limit}`);
     await this.#sleep(100);
     return this.#hotList.slice(0, Math.min(limit, this.#hotList.length));
   }

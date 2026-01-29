@@ -1,6 +1,6 @@
 /**
- * @fileoverview Utilidades de Grupos
- * @description Funciones auxiliares para gestión de grupos y miembros
+ * @fileoverview Group Utilities
+ * @description Helper functions for group and member management
  * @module utils/groupHelpers
  * @requires ../models/Group
  * @requires ../models/User
@@ -10,8 +10,8 @@ const Group = require('../models/Group');
 const User = require('../models/User');
 
 /**
- * Genera un código de invitación único (optimizado con exists)
- * @returns {Promise<string>} Código de invitación único
+ * Generates a unique invitation code (optimized with exists)
+ * @returns {Promise<string>} Unique invitation code
  */
 const generateUniqueInviteCode = async () => {
   let inviteCode;
@@ -21,7 +21,7 @@ const generateUniqueInviteCode = async () => {
 
   while (!isUnique && attempts < maxAttempts) {
     inviteCode = Group.generateInviteCode();
-    // Usar exists en lugar de findOne (más eficiente)
+    // Use exists instead of findOne (more efficient)
     const exists = await Group.exists({ inviteCode });
     if (!exists) {
       isUnique = true;
@@ -37,9 +37,9 @@ const generateUniqueInviteCode = async () => {
 };
 
 /**
- * Añade un grupo al array de grupos del usuario (ya optimizado con $addToSet)
- * @param {ObjectId} userId - ID del usuario
- * @param {ObjectId} groupId - ID del grupo
+ * Adds a group to the user's groups array (already optimized with $addToSet)
+ * @param {ObjectId} userId - User ID
+ * @param {ObjectId} groupId - Group ID
  */
 const addGroupToUser = async (userId, groupId) => {
   await User.updateOne(
@@ -49,9 +49,9 @@ const addGroupToUser = async (userId, groupId) => {
 };
 
 /**
- * Remueve un grupo del array de grupos del usuario
- * @param {ObjectId} userId - ID del usuario
- * @param {ObjectId} groupId - ID del grupo
+ * Removes a group from the user's groups array
+ * @param {ObjectId} userId - User ID
+ * @param {ObjectId} groupId - Group ID
  */
 const removeGroupFromUser = async (userId, groupId) => {
   await User.updateOne(
@@ -61,9 +61,9 @@ const removeGroupFromUser = async (userId, groupId) => {
 };
 
 /**
- * Remueve un grupo del array de grupos de todos los miembros
- * @param {Array} memberIds - Array de IDs de usuarios
- * @param {ObjectId} groupId - ID del grupo
+ * Removes a group from the groups array of all members
+ * @param {Array} memberIds - Array of user IDs
+ * @param {ObjectId} groupId - Group ID
  */
 const removeGroupFromAllMembers = async (memberIds, groupId) => {
   await User.updateMany(
@@ -73,10 +73,10 @@ const removeGroupFromAllMembers = async (memberIds, groupId) => {
 };
 
 /**
- * Añade un miembro al grupo
- * @param {Object} group - Instancia del grupo
- * @param {ObjectId} userId - ID del usuario a añadir
- * @param {string} role - Rol del usuario (opcional, por defecto 'member')
+ * Adds a member to the group
+ * @param {Object} group - Group instance
+ * @param {ObjectId} userId - ID of the user to add
+ * @param {string} role - User role (optional, defaults to 'member')
  */
 const addMemberToGroup = async (group, userId, role = 'member') => {
   if (group.isMember(userId)) {
@@ -99,9 +99,9 @@ const addMemberToGroup = async (group, userId, role = 'member') => {
 };
 
 /**
- * Remueve un miembro del grupo
- * @param {Object} group - Instancia del grupo
- * @param {ObjectId} userId - ID del usuario a remover
+ * Removes a member from the group
+ * @param {Object} group - Group instance
+ * @param {ObjectId} userId - ID of the user to remove
  */
 const removeMemberFromGroup = async (group, userId) => {
   if (group.isAdmin(userId)) {
@@ -122,7 +122,7 @@ const removeMemberFromGroup = async (group, userId) => {
 };
 
 /**
- * Opciones de populate estándar para grupos (incluye datos completos de miembros)
+ * Standard populate options for groups (includes complete member data)
  */
 const groupPopulateOptions = [
   { path: 'admin', select: '_id name email avatar stats' },
@@ -130,7 +130,7 @@ const groupPopulateOptions = [
 ];
 
 /**
- * Opciones de populate simplificadas para listados (incluye _id para comparaciones)
+ * Simplified populate options for listings (includes _id for comparisons)
  */
 const groupPopulateOptionsSimple = [
   { path: 'admin', select: '_id name avatar' },
@@ -138,7 +138,7 @@ const groupPopulateOptionsSimple = [
 ];
 
 /**
- * Opciones de populate para listados (mínimo necesario)
+ * Populate options for listings (minimum required)
  */
 const groupPopulateOptionsList = [
   { path: 'admin', select: '_id name' },

@@ -88,25 +88,25 @@ const memberValidation = [
   param('userId').isMongoId().withMessage('ID de usuario inválido'),
 ];
 
-// Rutas públicas (sin autenticación)
+// Public routes (no authentication)
 router.get('/public/:id', idValidation, validate, getGroupPublic);
 
-// Rutas protegidas - Rutas específicas primero
+// Protected routes - Specific routes first
 router.post('/', protect, createGroupValidation, validate, createGroup);
 router.get('/', protect, getMyGroups);
 router.post('/join', protect, joinGroupValidation, validate, joinGroup);
 
-// Rutas con parámetros específicos (antes de rutas genéricas con :id)
+// Routes with specific parameters (before generic :id routes)
 router.put('/:id/invite-code', protect, idValidation, validate, isGroupAdmin, regenerateInviteCode);
 router.post('/:id/invite', protect, idValidation, validate, isGroupAdmin, inviteUserToGroup);
 router.delete('/:id/members/:userId', protect, memberValidation, validate, isGroupAdmin, removeMember);
 
-// Rutas que requieren ser miembro del grupo
+// Routes that require being a group member
 router.get('/:id', protect, idValidation, validate, isGroupMember, getGroup);
 router.get('/:id/members', protect, idValidation, validate, isGroupMember, getMembers);
 router.delete('/:id/leave', protect, idValidation, validate, leaveGroup);
 
-// Rutas que requieren ser admin del grupo
+// Routes that require being group admin
 router.put('/:id', protect, updateGroupValidation, validate, isGroupAdmin, updateGroup);
 router.delete('/:id', protect, idValidation, validate, isGroupAdmin, deleteGroup);
 

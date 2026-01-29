@@ -4,8 +4,8 @@ import Button from '../../components/common/Button';
 import styles from './NotFound.module.css';
 
 /**
- * Página 404 - No Encontrada
- * Se muestra cuando el usuario accede a una ruta que no existe
+ * 404 Page - Not Found
+ * Displayed when user accesses a route that doesn't exist
  */
 const NotFound = () => {
   return (

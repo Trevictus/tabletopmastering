@@ -10,13 +10,13 @@ import { useAuth } from '../../context/AuthContext';
 import styles from './CreateEditMatchModal.module.css';
 
 /**
- * Modal para crear o editar una partida
+ * Modal for creating or editing a match
  */
 const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
   const { user } = useAuth();
   const isEditing = Boolean(match);
 
-  // Estado del formulario
+  // Form state
   const [formData, setFormData] = useState({
     gameId: '',
     groupId: '',
@@ -33,18 +33,18 @@ const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Cargar grupos - memoizado
+  // Load groups - memoized
   const loadGroups = useCallback(async () => {
     try {
       const response = await groupService.getMyGroups();
       setGroups(response.data || []);
     } catch (err) {
-      console.error('Error al cargar grupos:', err);
+      console.error('Error loading groups:', err);
       setErrors(prev => ({ ...prev, groups: 'Error al cargar grupos' }));
     }
   }, []);
 
-  // Cargar juegos - memoizado
+  // Load games - memoized
   const loadGames = useCallback(async (groupId = null) => {
     try {
       const params = groupId ? { groupId } : {};
@@ -56,20 +56,20 @@ const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
     }
   }, []);
 
-  // Cargar miembros del grupo - memoizado
+  // Load group members - memoized
   const loadGroupMembers = useCallback(async (groupId) => {
     try {
       const response = await groupService.getGroupMembers(groupId);
-      // La respuesta tiene la estructura { success, count, data: [...miembros] }
-      // donde data es directamente el array de miembros
+      // Response has structure { success, count, data: [...members] }
+      // where data is directly the array of members
       setGroupMembers(response.data || []);
     } catch (err) {
-      console.error('Error al cargar miembros:', err);
+      console.error('Error loading members:', err);
       setErrors(prev => ({ ...prev, members: 'Error al cargar miembros' }));
     }
   }, []);
 
-  // Cargar datos iniciales
+  // Load initial data
   useEffect(() => {
     if (isOpen) {
       loadGroups();
@@ -77,7 +77,7 @@ const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
     }
   }, [isOpen, loadGroups, loadGames]);
 
-  // Cargar juegos del grupo seleccionado
+  // Load games for the selected group
   useEffect(() => {
     if (formData.groupId) {
       loadGames(formData.groupId);
@@ -85,7 +85,7 @@ const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
     }
   }, [formData.groupId, loadGames, loadGroupMembers]);
 
-  // Prellenar formulario si es edición o resetear
+  // Prefill form if editing or reset
   useEffect(() => {
     if (match && isOpen) {
       const matchDate = new Date(match.scheduledDate);
@@ -141,7 +141,7 @@ const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
   };
 
   const handleSubmit = async () => {
-    // Validar formulario
+    // Validate form
     const newErrors = {};
 
     if (!formData.groupId) {
@@ -156,14 +156,14 @@ const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
       newErrors.scheduledDate = 'La fecha es obligatoria';
     }
 
-    // Asegurar que el usuario actual esté incluido en los jugadores
+    // Ensure current user is included in players
     const userIdStr = user?._id?.toString();
     let finalPlayerIds = [...formData.playerIds];
     if (userIdStr && !finalPlayerIds.includes(userIdStr)) {
       finalPlayerIds.push(userIdStr);
     }
 
-    // Validar que haya al menos 2 jugadores (incluyendo al usuario actual)
+    // Validate at least 2 players (including current user)
     if (finalPlayerIds.length < 2) {
       newErrors.playerIds = 'Debes seleccionar al menos 1 jugador adicional (tú ya estás incluido)';
     }
@@ -174,10 +174,10 @@ const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
     }
 
     setLoading(true);
-    setErrors({}); // Limpiar errores previos
+    setErrors({}); // Clear previous errors
 
     try {
-      // Combinar fecha y hora
+      // Combine date and time
       const scheduledDateTime = new Date(`${formData.scheduledDate}T${formData.scheduledTime}`);
 
       const matchData = {
@@ -191,7 +191,7 @@ const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
 
       await onSave(matchData, match?._id);
       
-      // Solo cerrar si no hay error
+      // Only close if there's no error
       onClose();
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || 'Error al guardar la partida';

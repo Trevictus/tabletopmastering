@@ -1,6 +1,9 @@
 /**
- * Servicio BGG - Usa mock para evitar dependencia de API externa
+ * BGG Service - Uses mock to avoid external API dependency
  */
-console.log('🎭 [BGG Service] Usando MOCK de BGG');
+const { createLogger } = require('../utils/logger');
+const logger = createLogger('BGGService');
+
+logger.info('Using BGG mock service');
 module.exports = require('./bggService.mock');
 

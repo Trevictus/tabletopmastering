@@ -1,6 +1,6 @@
 /**
- * @fileoverview Middleware de Autenticación
- * @description Protección de rutas mediante verificación JWT
+ * @fileoverview Authentication Middleware
+ * @description Route protection via JWT verification
  * @module middlewares/auth
  * @requires jsonwebtoken
  * @requires ../models/User
@@ -8,23 +8,26 @@
 
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { createLogger } = require('../utils/logger');
+
+const logger = createLogger('Auth');
 
 /**
- * Middleware para proteger rutas que requieren autenticación
+ * Middleware to protect routes that require authentication
  */
 const protect = async (req, res, next) => {
   let token;
 
-  // Verificar si el token está en el header Authorization
+  // Check if token is in Authorization header
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
-      // Obtener el token del header
+      // Get token from header
       token = req.headers.authorization.split(' ')[1];
 
-      // Verificar el token
+      // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Obtener el usuario del token (sin la contraseña)
+      // Get user from token (without password)
       req.user = await User.findById(decoded.id).select('-password');
 
       if (!req.user) {
@@ -43,9 +46,9 @@ const protect = async (req, res, next) => {
 
       next();
     } catch (error) {
-      console.error('Error en la autenticación:', error);
+      logger.error('Authentication error', error);
       
-      // Diferenciar entre token expirado e inválido
+      // Differentiate between expired and invalid tokens
       if (error.name === 'TokenExpiredError') {
         return res.status(401).json({
           success: false,

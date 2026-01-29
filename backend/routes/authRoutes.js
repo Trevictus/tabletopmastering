@@ -57,7 +57,7 @@ const updateProfileValidation = [
   body('avatar')
     .optional()
     .custom((value) => {
-      // Permitir URLs o base64
+      // Allow URLs or base64
       if (!value) return true;
       const isUrl = value.startsWith('http://') || value.startsWith('https://');
       const isBase64 = value.startsWith('data:image/');
@@ -76,13 +76,13 @@ const updateProfileValidation = [
     .withMessage('La cita no puede exceder 200 caracteres'),
 ];
 
-// Rutas públicas
+// Public routes
 router.post('/register', registerValidation, validate, register);
 router.post('/login', loginValidation, validate, login);
 router.post('/check-nickname', checkNickname);
 router.post('/check-email', checkEmail);
 
-// Rutas protegidas
+// Protected routes
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfileValidation, validate, updateProfile);
 router.get('/export-data', protect, exportUserData);

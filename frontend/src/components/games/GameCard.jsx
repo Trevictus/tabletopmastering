@@ -14,14 +14,14 @@ import Button from '../common/Button';
 import styles from './GameCard.module.css';
 
 /**
- * Componente GameCard - Tarjeta de juego
- * Muestra información de un juego de forma visual y compacta
+ * GameCard Component - Game card
+ * Displays game information in a visual and compact format
  */
 const GameCard = ({ 
   game, 
   onDelete, 
   canDelete = false,
-  showOwners = false // Solo mostrar propietarios en vista de grupo
+  showOwners = false // Only show owners in group view
 }) => {
   const {
     name,
@@ -34,11 +34,11 @@ const GameCard = ({
     source,
     categories,
     yearPublished,
-    owners = [], // Array de propietarios (cuando hay deduplicación)
-    addedBy // Propietario único (cuando no hay deduplicación)
+    owners = [], // Array of owners (when there's deduplication)
+    addedBy // Single owner (when there's no deduplication)
   } = game;
 
-  // Verificar si hay una imagen válida
+  // Check if there's a valid image
   const defaultPlaceholder = 'https://via.placeholder.com/300x400?text=Board+Game';
   const hasValidImage = (thumbnail || image) && 
     (thumbnail || image) !== defaultPlaceholder &&
@@ -51,13 +51,13 @@ const GameCard = ({
     : `${minPlayers}-${maxPlayers}`;
 
   /**
-   * Formatear la lista de propietarios para mostrar
-   * - 1 propietario: "De: Juan"
-   * - 2 propietarios: "De: Juan, María"
-   * - 3+ propietarios: "De: Juan, María +1"
+   * Format the owners list for display
+   * - 1 owner: "From: John"
+   * - 2 owners: "From: John, Mary"
+   * - 3+ owners: "From: John, Mary +1"
    */
   const formatOwners = () => {
-    // Usar owners si existe, sino usar addedBy
+    // Use owners if it exists, otherwise use addedBy
     const ownerList = owners.length > 0 ? owners : (addedBy ? [addedBy] : []);
     
     if (ownerList.length === 0) return null;
@@ -92,7 +92,7 @@ const GameCard = ({
               className={`${styles.gameImage} ${imageLoaded ? styles.imageLoaded : styles.imageLoading}`}
               loading="lazy"
               onLoad={() => setImageLoaded(true)}
-              onError={() => setImageLoaded(true)} // Mostrar placeholder si falla
+              onError={() => setImageLoaded(true)} // Show placeholder if fails
             />
           </>
         ) : (

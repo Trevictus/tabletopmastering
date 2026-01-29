@@ -1,13 +1,13 @@
 /**
- * @fileoverview Validadores
- * @description Funciones de validación para formularios (email, password, etc.)
+ * @fileoverview Validators
+ * @description Validation functions for forms (email, password, etc.)
  * @module utils/validators
  */
 
 /**
- * Valida un email
- * @param {string} email - Email a validar
- * @returns {boolean} True si es válido
+ * Validates an email
+ * @param {string} email - Email to validate
+ * @returns {boolean} True if valid
  */
 export const validateEmail = (email) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -15,36 +15,36 @@ export const validateEmail = (email) => {
 };
 
 /**
- * Valida una contraseña (mínimo 6 caracteres)
- * @param {string} password - Contraseña a validar
- * @returns {boolean} True si es válida
+ * Validates a password (minimum 6 characters)
+ * @param {string} password - Password to validate
+ * @returns {boolean} True if valid
  */
 export const validatePassword = (password) => {
   return password && password.length >= 6;
 };
 
 /**
- * Valida un nombre de usuario (mínimo 3 caracteres)
- * @param {string} username - Nombre de usuario a validar
- * @returns {boolean} True si es válido
+ * Validates a username (minimum 3 characters)
+ * @param {string} username - Username to validate
+ * @returns {boolean} True if valid
  */
 export const validateUsername = (username) => {
   return username && username.length >= 3;
 };
 
 /**
- * Valida que un campo no esté vacío
- * @param {string} value - Valor a validar
- * @returns {boolean} True si no está vacío
+ * Validates that a field is not empty
+ * @param {string} value - Value to validate
+ * @returns {boolean} True if not empty
  */
 export const validateRequired = (value) => {
   return value && value.trim().length > 0;
 };
 
 /**
- * Valida un código de invitación (8 caracteres alfanuméricos)
- * @param {string} code - Código a validar
- * @returns {boolean} True si es válido
+ * Validates an invitation code (8 alphanumeric characters)
+ * @param {string} code - Code to validate
+ * @returns {boolean} True if valid
  */
 export const validateInviteCode = (code) => {
   const re = /^[A-Z0-9]{8}$/;
@@ -52,19 +52,19 @@ export const validateInviteCode = (code) => {
 };
 
 /**
- * Valida si un avatar es una imagen real subida por el usuario
- * Solo acepta imágenes en formato data:image (base64)
- * @param {string} avatar - URL o data URI del avatar
- * @returns {boolean} True si es un avatar válido subido
+ * Validates if an avatar is a real image uploaded by the user
+ * Only accepts images in data:image format (base64)
+ * @param {string} avatar - URL or data URI of the avatar
+ * @returns {boolean} True if it's a valid uploaded avatar
  */
 export const isValidAvatar = (avatar) => {
   return avatar && avatar.startsWith('data:image');
 };
 
 /**
- * Capitaliza la primera letra de un string
- * @param {string} str - String a capitalizar
- * @returns {string} String con la primera letra en mayúscula
+ * Capitalizes the first letter of a string
+ * @param {string} str - String to capitalize
+ * @returns {string} String with the first letter capitalized
  */
 export const capitalize = (str) => {
   if (!str) return '';

@@ -1,6 +1,6 @@
 /**
- * @fileoverview Store de Autenticación con Zustand
- * @description Gestión de estado global de autenticación
+ * @fileoverview Authentication Store with Zustand
+ * @description Global authentication state management
  * @module stores/authStore
  */
 
@@ -10,7 +10,7 @@ import authService from '../services/authService';
 import { STORAGE_KEYS } from '../constants/auth';
 
 /**
- * Obtiene el usuario inicial de sessionStorage de forma segura
+ * Gets initial user from sessionStorage safely
  */
 const getInitialUser = () => {
   try {
@@ -26,37 +26,37 @@ const getInitialUser = () => {
 };
 
 /**
- * Verifica si hay token en sessionStorage
+ * Checks if token exists in sessionStorage
  */
 const hasStoredToken = () => {
   return !!sessionStorage.getItem(STORAGE_KEYS.TOKEN);
 };
 
 /**
- * Store de autenticación con Zustand
+ * Authentication store with Zustand
  * 
- * Proporciona:
- * - Estado del usuario autenticado
- * - Métodos de login, register, logout
- * - Actualización de perfil
- * - Validación de sesión
+ * Provides:
+ * - Authenticated user state
+ * - Login, register, logout methods
+ * - Profile update
+ * - Session validation
  */
 const useAuthStore = create(
   devtools(
     (set, get) => ({
-      // Estado
+      // State
       user: getInitialUser(),
       loading: false,
       error: null,
       initializing: hasStoredToken(),
       
-      // Estado derivado (getter)
+      // Derived state (getter)
       get isAuthenticated() {
         return !!get().user;
       },
 
       /**
-       * Inicializa la autenticación validando el token con el backend
+       * Initializes authentication by validating token with backend
        */
       initAuth: async () => {
         const token = sessionStorage.getItem(STORAGE_KEYS.TOKEN);
@@ -73,22 +73,22 @@ const useAuthStore = create(
             authService.syncUserData(currentUser);
           }
         } catch (err) {
-          // Solo cerrar sesión si el token es explícitamente inválido
+          // Only logout if token is explicitly invalid
           if (err.response?.status === 401) {
             authService.logout();
             set({ 
               user: null, 
-              error: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.' 
+              error: 'Your session has expired. Please log in again.' 
             });
           }
-          // En caso de error de red, mantener la sesión local
+          // On network error, keep local session
         } finally {
           set({ initializing: false });
         }
       },
 
       /**
-       * Inicia sesión con credenciales
+       * Logs in with credentials
        */
       login: async (credentials) => {
         set({ loading: true, error: null });
@@ -99,16 +99,16 @@ const useAuthStore = create(
             set({ user: data.data.user, loading: false });
             return data;
           }
-          throw new Error('Respuesta de inicio de sesión inválida');
+          throw new Error('Invalid login response');
         } catch (err) {
-          const errorMessage = err.response?.data?.message || err.message || 'Error al iniciar sesión';
+          const errorMessage = err.response?.data?.message || err.message || 'Error logging in';
           set({ error: errorMessage, loading: false });
           throw new Error(errorMessage);
         }
       },
 
       /**
-       * Registra un nuevo usuario
+       * Registers a new user
        */
       register: async (userData) => {
         set({ loading: true, error: null });
@@ -119,16 +119,16 @@ const useAuthStore = create(
             set({ user: data.data.user, loading: false });
             return data;
           }
-          throw new Error('Respuesta de registro inválida');
+          throw new Error('Invalid register response');
         } catch (err) {
-          const errorMessage = err.response?.data?.message || err.message || 'Error al registrarse';
+          const errorMessage = err.response?.data?.message || err.message || 'Error registering';
           set({ error: errorMessage, loading: false });
           throw new Error(errorMessage);
         }
       },
 
       /**
-       * Cierra la sesión del usuario
+       * Logs out the user
        */
       logout: () => {
         authService.logout();
@@ -136,7 +136,7 @@ const useAuthStore = create(
       },
 
       /**
-       * Actualiza el perfil del usuario
+       * Updates the user profile
        */
       updateProfile: async (profileData) => {
         set({ loading: true, error: null });
@@ -147,16 +147,16 @@ const useAuthStore = create(
             set({ user: data.user, loading: false });
             return data;
           }
-          throw new Error('Respuesta de actualización inválida');
+          throw new Error('Invalid update response');
         } catch (err) {
-          const errorMessage = err.response?.data?.message || err.message || 'Error al actualizar perfil';
+          const errorMessage = err.response?.data?.message || err.message || 'Error updating profile';
           set({ error: errorMessage, loading: false });
           throw new Error(errorMessage);
         }
       },
 
       /**
-       * Refresca los datos del usuario desde el backend
+       * Refreshes user data from the backend
        */
       refreshUser: async () => {
         try {
@@ -167,18 +167,18 @@ const useAuthStore = create(
           }
           return updatedUser;
         } catch (err) {
-          console.error('Error refrescando usuario:', err);
+          console.error('Error refreshing user:', err);
           return null;
         }
       },
 
       /**
-       * Limpia mensajes de error
+       * Clears error messages
        */
       clearError: () => set({ error: null }),
 
       /**
-       * Setea el usuario manualmente (útil para actualizaciones externas)
+       * Sets the user manually (useful for external updates)
        */
       setUser: (user) => set({ user }),
     }),

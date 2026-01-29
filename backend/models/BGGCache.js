@@ -1,6 +1,6 @@
 /**
- * @fileoverview Modelo de Caché BGG
- * @description Cache de datos de BoardGameGeek para reducir llamadas a API externa
+ * @fileoverview BGG Cache Model
+ * @description Cache for BoardGameGeek data to reduce external API calls
  * @module models/BGGCache
  * @requires mongoose
  */
@@ -8,11 +8,11 @@
 const mongoose = require('mongoose');
 
 /**
- * Esquema de Caché BGG
+ * BGG Cache Schema
  * @typedef {Object} BGGCache
- * @property {number} bggId - ID único del juego en BGG
- * @property {Object} data - Datos cacheados del juego
- * @property {Date} lastSync - Última sincronización
+ * @property {number} bggId - Unique game ID in BGG
+ * @property {Object} data - Cached game data
+ * @property {Date} lastSync - Last synchronization date
  */
 const bggCacheSchema = new mongoose.Schema(
   {
@@ -41,11 +41,11 @@ const bggCacheSchema = new mongoose.Schema(
   }
 );
 
-// Índice TTL para auto-eliminación de documentos expirados
-// MongoDB eliminará automáticamente documentos cuando expiresAt < now
+// TTL index for automatic deletion of expired documents
+// MongoDB will automatically delete documents when expiresAt < now
 bggCacheSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-// Método estático para obtener datos de caché válidos
+// Static method to get valid cache data
 bggCacheSchema.statics.getValidCache = async function(bggId) {
   const cached = await this.findOne({
     bggId: bggId,
@@ -55,7 +55,7 @@ bggCacheSchema.statics.getValidCache = async function(bggId) {
   return cached ? cached.data : null;
 };
 
-// Método estático para guardar en caché con expiración de 30 días
+// Static method to save to cache with 30-day expiration
 bggCacheSchema.statics.saveToCache = async function(bggId, data, expirationDays = 30) {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + expirationDays);
@@ -75,17 +75,17 @@ bggCacheSchema.statics.saveToCache = async function(bggId, data, expirationDays 
   );
 };
 
-// Método estático para invalidar caché de un juego específico
+// Static method to invalidate cache for a specific game
 bggCacheSchema.statics.invalidateCache = async function(bggId) {
   await this.deleteOne({ bggId: bggId });
 };
 
-// Método estático para limpiar toda la caché (útil para mantenimiento)
+// Static method to clear all cache (useful for maintenance)
 bggCacheSchema.statics.clearAllCache = async function() {
   await this.deleteMany({});
 };
 
-// Método estático para obtener estadísticas de caché
+// Static method to get cache statistics
 bggCacheSchema.statics.getCacheStats = async function() {
   const total = await this.countDocuments();
   const expired = await this.countDocuments({

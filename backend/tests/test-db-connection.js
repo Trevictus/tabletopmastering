@@ -22,7 +22,7 @@ const testConnection = async () => {
     console.log(`📡 Estado: ${conn.connection.readyState === 1 ? 'Conectado' : 'Desconocido'}`);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
-    // Verificar las colecciones existentes
+    // Verify existing collections
     console.log('📚 Colecciones en la base de datos:');
     const collections = await conn.connection.db.listCollections().toArray();
     
@@ -34,7 +34,7 @@ const testConnection = async () => {
       });
     }
 
-    // Obtener estadísticas de la base de datos
+    // Get database statistics
     console.log('\n📊 Estadísticas de la base de datos:');
     const stats = await conn.connection.db.stats();
     console.log(`   📦 Tamaño de datos: ${(stats.dataSize / 1024).toFixed(2)} KB`);
@@ -44,7 +44,7 @@ const testConnection = async () => {
 
     console.log('\n✅ La base de datos está funcionando correctamente\n');
 
-    // Cerrar la conexión
+    // Close the connection
     await mongoose.connection.close();
     console.log('👋 Conexión cerrada correctamente');
     process.exit(0);

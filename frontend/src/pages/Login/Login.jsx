@@ -16,9 +16,9 @@ const Login = () => {
 
   const from = location.state?.from || '/home';
 
-  // Cerrar modal al hacer clic fuera del formulario
+  // Close modal when clicking outside the form
   const handleOverlayClick = (e) => {
-    // Solo cerrar si el clic fue directamente en el overlay, no en el formulario
+    // Only close if click was directly on overlay, not on the form
     if (e.target === e.currentTarget) {
       navigate('/');
     }
@@ -43,7 +43,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
 
-  // Validación de identifier (email o nombre de jugador)
+  // Identifier validation (email or player name)
   const validateIdentifier = (identifier) => {
     if (!identifier.trim()) {
       return 'El email o nombre de jugador es obligatorio';
@@ -54,7 +54,7 @@ const Login = () => {
     return '';
   };
 
-  // Validación de contraseña
+  // Password validation
   const validatePassword = (password) => {
     if (!password) {
       return 'La contraseña es obligatoria';
@@ -65,7 +65,7 @@ const Login = () => {
     return '';
   };
 
-  // Manejar cambios en los inputs
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const fieldValue = type === 'checkbox' ? checked : value;
@@ -75,12 +75,12 @@ const Login = () => {
       [name]: fieldValue
     }));
 
-    // Limpiar error del servidor al escribir
+    // Clear server error when typing
     if (serverError) {
       setServerError('');
     }
 
-    // Validar en tiempo real si el campo ya fue tocado
+    // Validate in real-time if field was already touched
     if (touched[name]) {
       if (name === 'identifier') {
         setErrors((prev) => ({ ...prev, identifier: validateIdentifier(value) }));
@@ -90,7 +90,7 @@ const Login = () => {
     }
   };
 
-  // Manejar pérdida de foco (blur)
+  // Handle blur
   const handleBlur = (e) => {
     const { name, value } = e.target;
 
@@ -99,7 +99,7 @@ const Login = () => {
       [name]: true
     }));
 
-    // Validar el campo
+    // Validate the field
     if (name === 'identifier') {
       setErrors((prev) => ({ ...prev, identifier: validateIdentifier(value) }));
     } else if (name === 'password') {
@@ -107,17 +107,17 @@ const Login = () => {
     }
   };
 
-  // Manejar envío del formulario
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Marcar todos los campos como tocados
+    // Mark all fields as touched
     setTouched({
       identifier: true,
       password: true
     });
 
-    // Validar todos los campos
+    // Validate all fields
     const identifierError = validateIdentifier(formData.identifier);
     const passwordError = validatePassword(formData.password);
 
@@ -126,12 +126,12 @@ const Login = () => {
       password: passwordError
     });
 
-    // Si hay errores, no enviar el formulario
+    // If there are errors, don't submit the form
     if (identifierError || passwordError) {
       return;
     }
 
-    // Enviar datos al servidor
+    // Send data to server
     setIsLoading(true);
     setServerError('');
 
@@ -148,13 +148,13 @@ const Login = () => {
       
       navigate(from, { replace: true });
     } catch (error) {
-      // Mostrar toast de error
+      // Show error toast
       toast.error(
         error.response?.data?.message || 'Email o contraseña incorrectos',
         { title: 'Error de autenticación' }
       );
       
-      // Manejar errores del servidor
+      // Handle server errors
       if (error.response?.data?.message) {
         setServerError(error.response.data.message);
       } else if (error.message) {

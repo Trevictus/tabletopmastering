@@ -1,6 +1,6 @@
 /**
- * @fileoverview Servicio de Partidas
- * @description Lógica de negocio para CRUD de partidas y gestión de resultados
+ * @fileoverview Match Service
+ * @description Business logic for match CRUD and results management
  * @module services/matchService
  * @requires ../models/Match
  * @requires ../models/Group
@@ -18,8 +18,8 @@ const pointsCalculator = require('./pointsCalculator');
 const rankingService = require('./rankingService');
 
 /**
- * Constantes de populate optimizadas con proyecciones mínimas
- * NOTA: Incluimos _id para que el frontend pueda hacer comparaciones correctas
+ * Optimized populate constants with minimal projections
+ * NOTE: We include _id so frontend can make correct comparisons
  */
 const MATCH_POPULATE_OPTIONS = [
   { path: 'game', select: 'name image thumbnail', options: { lean: true } },
@@ -45,7 +45,7 @@ const MATCH_POPULATE_DETAILED = [
 ];
 
 /**
- * Proyecciones para consultas de Match
+ * Projections for Match queries
  */
 const MATCH_LIST_PROJECTION = {
   game: 1,
@@ -60,7 +60,7 @@ const MATCH_LIST_PROJECTION = {
 };
 
 /**
- * Validar que el usuario es miembro del grupo (optimizado con projection)
+ * Validate that user is a member of the group (optimized with projection)
  */
 exports.validateGroupMembership = async (groupId, userId) => {
   const group = await Group.findById(groupId)
@@ -83,15 +83,15 @@ exports.validateGroupMembership = async (groupId, userId) => {
 };
 
 /**
- * Crear una partida
+ * Create a match
  */
 exports.createMatch = async (gameId, groupId, scheduledDate, userId, playerIds = [], location = '', notes = '') => {
-  // Validaciones
+  // Validations
   if (!gameId || !groupId || !scheduledDate) {
     throw new Error('gameId, groupId y scheduledDate son obligatorios');
   }
 
-  // Verificar que el juego existe (solo necesitamos saber que existe)
+  // Verify game exists (we only need to know it exists)
   const game = await Game.findById(gameId)
     .select('_id name group')
     .lean();
@@ -100,7 +100,7 @@ exports.createMatch = async (gameId, groupId, scheduledDate, userId, playerIds =
     throw { status: 404, message: 'Juego no encontrado' };
   }
 
-  // Verificar que el grupo existe y el usuario es miembro (usando projection)
+  // Verify group exists and user is a member (using projection)
   const group = await Group.findById(groupId)
     .select('members')
     .lean();
@@ -115,28 +115,28 @@ exports.createMatch = async (gameId, groupId, scheduledDate, userId, playerIds =
     throw { status: 403, message: 'No eres miembro de este grupo' };
   }
 
-  // Validar fecha
+  // Validate date
   if (new Date(scheduledDate) < new Date()) {
     throw new Error('La fecha de la partida no puede ser en el pasado');
   }
 
-  // Preparar jugadores usando Set para unicidad
+  // Prepare players using Set for uniqueness
   const userIdStr = userId.toString();
   const uniquePlayerIds = new Set();
   
   if (playerIds && Array.isArray(playerIds) && playerIds.length > 0) {
     playerIds.forEach(id => uniquePlayerIds.add(id.toString()));
   }
-  // Agregar el creador si no está en la lista
+  // Add creator if not in the list
   if (!uniquePlayerIds.has(userIdStr)) {
     uniquePlayerIds.add(userIdStr);
   }
   
-  // Validar que todos los jugadores son miembros del grupo (optimizado sin queries adicionales)
+  // Validate all players are group members (optimized without additional queries)
   const players = [];
   for (const playerId of uniquePlayerIds) {
     if (!memberUserIds.has(playerId)) {
-      // Solo hacemos query si el usuario no está en el grupo
+      // Only query if user is not in the group
       const user = await User.findById(playerId).select('name').lean();
       const userName = user ? user.name : playerId;
       throw { status: 403, message: `El usuario ${userName} no es miembro del grupo` };
@@ -148,12 +148,12 @@ exports.createMatch = async (gameId, groupId, scheduledDate, userId, playerIds =
     });
   }
 
-  // Validar mínimo 2 jugadores
+  // Validate minimum 2 players
   if (players.length < 2) {
     throw { status: 400, message: 'Una partida debe tener al menos 2 jugadores' };
   }
 
-  // Crear la partida
+  // Create the match
   const match = await Match.create({
     game: gameId,
     group: groupId,
@@ -164,26 +164,26 @@ exports.createMatch = async (gameId, groupId, scheduledDate, userId, playerIds =
     createdBy: userId,
   });
 
-  // Populate referencias
+  // Populate references
   await match.populate(MATCH_POPULATE_OPTIONS);
 
   return match;
 };
 
 /**
- * Listar partidas con filtros (optimizado con lean y projection)
+ * List matches with filters (optimized with lean and projection)
  */
 exports.getMatches = async (groupId, userId, status = null, page = 1, limit = 20) => {
-  // Construir filtro
+  // Build filter
   const filter = {};
   
-  // Si se proporciona groupId, validar membresía y filtrar por grupo
+  // If groupId is provided, validate membership and filter by group
   if (groupId) {
     await this.validateGroupMembership(groupId, userId);
     filter.group = groupId;
   } else {
-    // Si no hay groupId, obtener todas las partidas donde el usuario es jugador
-    // Optimizado: solo obtener _id de grupos
+    // If no groupId, get all matches where user is a player
+    // Optimized: only get group _id
     const userGroups = await Group.find({
       'members.user': userId
     })
@@ -198,11 +198,11 @@ exports.getMatches = async (groupId, userId, status = null, page = 1, limit = 20
     filter.status = status;
   }
 
-  // Paginación
+  // Pagination
   const skip = (parseInt(page) - 1) * parseInt(limit);
   const limitNum = parseInt(limit);
 
-  // Consultas en paralelo para mejor rendimiento
+  // Parallel queries for better performance
   const [matches, total] = await Promise.all([
     Match.find(filter)
       .select(MATCH_LIST_PROJECTION)
@@ -224,7 +224,7 @@ exports.getMatches = async (groupId, userId, status = null, page = 1, limit = 20
 };
 
 /**
- * Obtener una partida por ID con acceso verificado (optimizado)
+ * Get a match by ID with verified access (optimized)
  */
 exports.getMatchById = async (matchId, userId) => {
   const match = await Match.findById(matchId)
@@ -235,7 +235,7 @@ exports.getMatchById = async (matchId, userId) => {
     throw { status: 404, message: 'Partida no encontrada' };
   }
 
-  // Verificar permiso de acceso (usando datos ya cargados del populate)
+  // Verify access permission (using already loaded populate data)
   const groupId = match.group._id || match.group;
   const group = await Group.findById(groupId)
     .select('members')
@@ -253,20 +253,20 @@ exports.getMatchById = async (matchId, userId) => {
 };
 
 /**
- * Actualizar una partida (optimizado)
+ * Update a match (optimized)
  */
 exports.updateMatch = async (matchId, updates, userId) => {
-  // Obtener el documento completo para evitar problemas con validaciones de Mongoose
+  // Get full document to avoid issues with Mongoose validations
   const match = await Match.findById(matchId);
     
   if (!match) {
     throw { status: 404, message: 'Partida no encontrada' };
   }
 
-  // Solo el creador o admin del grupo puede editar
+  // Only creator or group admin can edit
   const isCreator = match.createdBy.toString() === userId.toString();
   
-  // Solo consultar grupo si no es el creador
+  // Only query group if not the creator
   let isGroupAdmin = false;
   if (!isCreator) {
     const group = await Group.findById(match.group)
@@ -279,32 +279,32 @@ exports.updateMatch = async (matchId, updates, userId) => {
     throw { status: 403, message: 'No tienes permiso para editar esta partida' };
   }
 
-  // No actualizar durante partida en curso
+  // Cannot update during match in progress
   if (match.status === 'en_curso') {
     throw new Error('No puedes editar una partida en curso');
   }
 
-  // Validar fecha si se proporciona
+  // Validate date if provided
   const { scheduledDate, location, notes } = updates;
   if (scheduledDate && new Date(scheduledDate) < new Date()) {
     throw new Error('La fecha de la partida no puede ser en el pasado');
   }
 
-  // Si se cambia la fecha, resetear las confirmaciones de los demás jugadores (excepto el creador)
+  // If date changes, reset other players' confirmations (except creator)
   const oldScheduledDate = match.scheduledDate;
   const newScheduledDate = scheduledDate ? new Date(scheduledDate) : null;
   const dateChanged = newScheduledDate && oldScheduledDate.getTime() !== newScheduledDate.getTime();
 
   if (dateChanged) {
     match.players.forEach(player => {
-      // Mantener la confirmación del creador, resetear las demás
+      // Keep creator's confirmation, reset others
       if (player.user.toString() !== userId.toString()) {
         player.confirmed = false;
       }
     });
   }
 
-  // Actualizar campos permitidos
+  // Update allowed fields
   if (scheduledDate) match.scheduledDate = scheduledDate;
   if (location !== undefined) match.location = location;
   if (notes !== undefined) match.notes = notes;
@@ -316,7 +316,7 @@ exports.updateMatch = async (matchId, updates, userId) => {
 };
 
 /**
- * Finalizar una partida y registrar resultados (optimizado)
+ * Finish a match and register results (optimized)
  */
 exports.finishMatch = async (matchId, userId, winnerId = null, results = [], duration = null, notes = null) => {
   const match = await Match.findById(matchId);
@@ -324,10 +324,10 @@ exports.finishMatch = async (matchId, userId, winnerId = null, results = [], dur
     throw { status: 404, message: 'Partida no encontrada' };
   }
 
-  // Solo el creador o admin del grupo puede terminar
+  // Only creator or group admin can finish
   const isCreator = match.createdBy.toString() === userId.toString();
   
-  // Solo consultar grupo si no es el creador
+  // Only query group if not the creator
   let isGroupAdmin = false;
   if (!isCreator) {
     const group = await Group.findById(match.group)
@@ -340,12 +340,12 @@ exports.finishMatch = async (matchId, userId, winnerId = null, results = [], dur
     throw { status: 403, message: 'No tienes permiso para terminar esta partida' };
   }
 
-  // Validar que la partida no esté ya finalizada
+  // Validate match is not already finished
   if (match.status === 'finalizada') {
     throw new Error('Esta partida ya ha sido finalizada');
   }
 
-  // Validar winner si se proporciona
+  // Validate winner if provided
   if (winnerId) {
     const winnerExists = match.players.some(p => p.user.toString() === winnerId);
     if (!winnerExists) {
@@ -354,7 +354,7 @@ exports.finishMatch = async (matchId, userId, winnerId = null, results = [], dur
     match.winner = winnerId;
   }
 
-  // Actualizar resultados si se proporcionan
+  // Update results if provided
   if (results && Array.isArray(results)) {
     for (const result of results) {
       const playerIndex = match.players.findIndex(
@@ -372,14 +372,14 @@ exports.finishMatch = async (matchId, userId, winnerId = null, results = [], dur
     }
   }
 
-  // Validar posiciones si existen
+  // Validate positions if they exist
   const positionsToValidate = match.players.filter(p => p.position !== undefined && p.position !== null);
   if (positionsToValidate.length > 0) {
     if (!pointsCalculator.validatePositions(match.players)) {
       throw new Error('No puede haber posiciones duplicadas');
     }
 
-    // Calcular puntos automáticamente basado en posiciones
+    // Calculate points automatically based on positions
     const pointsData = pointsCalculator.calculatePointsForAllPlayers(match.players);
     pointsData.forEach(data => {
       const playerIndex = match.players.findIndex(
@@ -391,12 +391,12 @@ exports.finishMatch = async (matchId, userId, winnerId = null, results = [], dur
     });
   }
 
-  // Actualizar duración y estado
+  // Update duration and status
   if (duration) {
     match.duration = duration;
   }
 
-  // Actualizar notas si se proporcionan
+  // Update notes if provided
   if (notes !== null && notes !== undefined) {
     match.notes = notes;
   }
@@ -406,10 +406,10 @@ exports.finishMatch = async (matchId, userId, winnerId = null, results = [], dur
 
   await match.save();
 
-  // Actualizar ranking automáticamente
+  // Update ranking automatically
   const rankingReport = await rankingService.updateMatchStatistics(match);
 
-  // Actualizar estadísticas del grupo
+  // Update group statistics
   if (match.group) {
     await Group.findByIdAndUpdate(
       match.group,
@@ -423,17 +423,17 @@ exports.finishMatch = async (matchId, userId, winnerId = null, results = [], dur
 };
 
 /**
- * Confirmar asistencia a partida (optimizado)
+ * Confirm match attendance (optimized)
  */
 exports.confirmAttendance = async (matchId, userId) => {
-  // No usamos select() para obtener todos los campos y poder devolverlos completos
+  // Don't use select() to get all fields and return them complete
   const match = await Match.findById(matchId);
     
   if (!match) {
     throw { status: 404, message: 'Partida no encontrada' };
   }
 
-  // El usuario debe ser uno de los jugadores
+  // The user must be one of the players
   const playerIndex = match.players.findIndex(
     p => p.user.toString() === userId.toString()
   );
@@ -442,12 +442,12 @@ exports.confirmAttendance = async (matchId, userId) => {
     throw { status: 403, message: 'No estás invitado a esta partida' };
   }
 
-  // No confirmar si la partida ya finalizó
+  // Cannot confirm if match already finished
   if (match.status === 'finalizada' || match.status === 'cancelada') {
     throw new Error(`No puedes confirmar una partida ${match.status}`);
   }
 
-  // Confirmar asistencia
+  // Confirm attendance
   match.players[playerIndex].confirmed = true;
 
   await match.save();
@@ -457,9 +457,9 @@ exports.confirmAttendance = async (matchId, userId) => {
 };
 
 /**
- * Cancelar asistencia a partida (abandonar partida)
- * Si el usuario no es el creador, se elimina de la partida
- * Si solo queda 1 jugador, la partida se elimina
+ * Cancel match attendance (leave match)
+ * If user is not creator, they are removed from the match
+ * If only 1 player remains, the match is deleted
  */
 exports.cancelAttendance = async (matchId, userId) => {
   const match = await Match.findById(matchId);
@@ -468,7 +468,7 @@ exports.cancelAttendance = async (matchId, userId) => {
     throw { status: 404, message: 'Partida no encontrada' };
   }
 
-  // El usuario debe ser uno de los jugadores
+  // User must be one of the players
   const playerIndex = match.players.findIndex(
     p => p.user.toString() === userId.toString()
   );
@@ -477,7 +477,7 @@ exports.cancelAttendance = async (matchId, userId) => {
     throw { status: 403, message: 'No estás invitado a esta partida' };
   }
 
-  // No cancelar si la partida ya finalizó o está cancelada
+  // Cannot cancel if match already finished or cancelled
   if (match.status === 'finalizada' || match.status === 'cancelada') {
     throw new Error(`No puedes cancelar asistencia a una partida ${match.status}`);
   }
@@ -485,13 +485,13 @@ exports.cancelAttendance = async (matchId, userId) => {
   const isCreator = match.createdBy.toString() === userId.toString();
 
   if (isCreator) {
-    // El creador solo cancela su confirmación, no puede abandonar
+    // Creator only cancels their confirmation, cannot leave
     match.players[playerIndex].confirmed = false;
   } else {
-    // Los demás jugadores abandonan la partida (se eliminan)
+    // Other players leave the match (are removed)
     match.players.splice(playerIndex, 1);
     
-    // Si solo queda 1 jugador (el creador), eliminar la partida
+    // If only 1 player remains (the creator), delete the match
     if (match.players.length < 2) {
       await Match.findByIdAndDelete(matchId);
       return { deleted: true, message: 'Partida eliminada por falta de jugadores' };
@@ -505,7 +505,7 @@ exports.cancelAttendance = async (matchId, userId) => {
 };
 
 /**
- * Eliminar una partida (optimizado)
+ * Delete a match (optimized)
  */
 exports.deleteMatch = async (matchId, userId) => {
   const match = await Match.findById(matchId)
@@ -515,10 +515,10 @@ exports.deleteMatch = async (matchId, userId) => {
     throw { status: 404, message: 'Partida no encontrada' };
   }
 
-  // Solo el creador o admin del grupo puede eliminar
+  // Only creator or group admin can delete
   const isCreator = match.createdBy.toString() === userId.toString();
   
-  // Solo consultar grupo si no es el creador
+  // Only query group if not the creator
   let isGroupAdmin = false;
   if (!isCreator) {
     const group = await Group.findById(match.group)
@@ -531,7 +531,7 @@ exports.deleteMatch = async (matchId, userId) => {
     throw { status: 403, message: 'No tienes permiso para eliminar esta partida' };
   }
 
-  // No eliminar partidas finalizadas
+  // Cannot delete finished matches
   if (match.status === 'finalizada') {
     throw new Error('No puedes eliminar una partida finalizada');
   }
@@ -542,17 +542,17 @@ exports.deleteMatch = async (matchId, userId) => {
 };
 
 /**
- * Obtener ranking global
+ * Get global ranking
  */
 exports.getGlobalRanking = async () => {
   return await rankingService.getGlobalRanking();
 };
 
 /**
- * Obtener ranking de un grupo (optimizado)
+ * Get group ranking (optimized)
  */
 exports.getGroupRanking = async (groupId, userId) => {
-  // Verificar que el grupo existe y el usuario es miembro en una sola query
+  // Verify group exists and user is a member in a single query
   const group = await Group.findById(groupId)
     .select('members')
     .lean();
@@ -561,7 +561,7 @@ exports.getGroupRanking = async (groupId, userId) => {
     throw { status: 404, message: 'Grupo no encontrado' };
   }
 
-  // Verificar que el usuario es miembro del grupo
+  // Verify user is a member of the group
   const isMember = group.members.some(
     member => member.user.toString() === userId.toString()
   );

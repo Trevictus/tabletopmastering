@@ -1,6 +1,6 @@
 /**
- * @fileoverview Servicio de Rankings
- * @description Obtiene rankings globales y por grupo
+ * @fileoverview Ranking Service
+ * @description Gets global and group rankings
  * @module services/rankingService
  */
 

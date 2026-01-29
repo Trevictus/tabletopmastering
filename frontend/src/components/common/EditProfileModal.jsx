@@ -69,7 +69,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Limpiar error del campo al escribir y resetear disponibilidad
+    // Clear field error when typing and reset availability
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
     }

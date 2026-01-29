@@ -1,6 +1,6 @@
 /**
- * @fileoverview Cliente API HTTP
- * @description Configuración de Axios con interceptors, autenticación y manejo de errores
+ * @fileoverview HTTP API Client
+ * @description Axios configuration with interceptors, authentication and error handling
  * @module services/api
  */
 
@@ -8,30 +8,30 @@ import axios from 'axios';
 import { STORAGE_KEYS, AUTH_ROUTES } from '../constants/auth';
 
 /**
- * Configuración del cliente API con Axios
+ * API Client Configuration with Axios
  * 
- * Características:
- * - Interceptors para autenticación automática
- * - Manejo centralizado de errores
- * - Retry automático en fallos de red
- * - Logging en desarrollo
- * - Cancelación de peticiones duplicadas
+ * Features:
+ * - Automatic authentication interceptors
+ * - Centralized error handling
+ * - Automatic retry on network failures
+ * - Development logging
+ * - Duplicate request cancellation
  */
 
-// Detectar la URL base de la API dinámicamente
+// Dynamically detect API base URL
 const getApiBaseURL = () => {
-  // Si hay una variable de entorno configurada, usarla
+  // If environment variable is configured, use it
   const envApiUrl = import.meta.env.VITE_API_URL;
   
   if (envApiUrl) {
     return envApiUrl;
   }
   
-  // Por defecto, usar localhost (desarrollo local con Docker)
+  // Default to localhost (local Docker development)
   return 'http://localhost/api';
 };
 
-// Configuración base de la API
+// API base configuration
 const API_CONFIG = {
   baseURL: getApiBaseURL(),
   timeout: 30000, // 30 segundos
@@ -193,33 +193,33 @@ api.interceptors.response.use(
       if (!isAuthRoute && !originalRequest._retry) {
         originalRequest._retry = true;
 
-        // Limpiar datos de autenticación (sessionStorage para aislamiento por pestaña)
+        // Clear auth data (sessionStorage for tab isolation)
         sessionStorage.removeItem(STORAGE_KEYS.TOKEN);
         sessionStorage.removeItem(STORAGE_KEYS.USER);
 
-        // Redirigir a login
+        // Redirect to login
         if (currentPath !== AUTH_ROUTES.HOME) {
           window.location.href = AUTH_ROUTES.LOGIN;
         }
       }
     }
 
-    // 5. Error 403 - Prohibido (silencioso)
-    // 6. Error 404 - No encontrado (silencioso)
-    // 7. Error 500+ - Error del servidor (silencioso)
+    // 5. Error 403 - Forbidden (silent)
+    // 6. Error 404 - Not found (silent)
+    // 7. Error 500+ - Server error (silent)
 
-    // Retornar error para manejo en componentes
+    // Return error for handling in components
     return Promise.reject(error);
   }
 );
 
 // ============================================================================
-// UTILIDADES ADICIONALES
+// ADDITIONAL UTILITIES
 // ============================================================================
 
 /**
- * Cancela todas las peticiones pendientes
- * Útil al navegar entre páginas o desmontar componentes
+ * Cancels all pending requests
+ * Useful when navigating between pages or unmounting components
  */
 export const cancelAllPendingRequests = () => {
   pendingRequests.forEach((request) => {

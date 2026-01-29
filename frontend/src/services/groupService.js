@@ -1,6 +1,6 @@
 /**
- * @fileoverview Servicio de Grupos
- * @description Operaciones CRUD de grupos, miembros e invitaciones
+ * @fileoverview Group Service
+ * @description CRUD operations for groups, members and invitations
  * @module services/groupService
  */
 

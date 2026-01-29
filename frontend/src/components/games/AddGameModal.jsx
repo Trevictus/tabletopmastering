@@ -29,7 +29,7 @@ const AddGameModal = ({ isOpen, onClose, onGameAdded, groupId }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Estado para juego personalizado
+  // State for custom game
   const [customGame, setCustomGame] = useState({
     name: '',
     description: '',
@@ -66,7 +66,7 @@ const AddGameModal = ({ isOpen, onClose, onGameAdded, groupId }) => {
     onClose();
   };
 
-  // Buscar juegos en BGG
+  // Search games in BGG
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) {
@@ -129,7 +129,7 @@ const AddGameModal = ({ isOpen, onClose, onGameAdded, groupId }) => {
     }
   };
 
-  // Añadir juego desde BGG
+  // Add game from BGG
   const handleAddFromBGG = async () => {
     if (!gamePreview) return;
 
@@ -188,14 +188,14 @@ const AddGameModal = ({ isOpen, onClose, onGameAdded, groupId }) => {
           : []
       };
 
-      // Solo incluir image si es una URL válida
+      // Only include image if it's a valid URL
       const imageUrl = customGame.image?.trim();
       if (imageUrl && imageUrl.length > 1) {
         try {
           new URL(imageUrl);
           gameData.image = imageUrl;
         } catch {
-          // Si no es una URL válida, no la incluimos
+          // If it's not a valid URL, we don't include it
         }
       }
 

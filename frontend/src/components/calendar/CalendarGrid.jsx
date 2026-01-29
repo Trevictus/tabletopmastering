@@ -16,13 +16,13 @@ const getFirstDayOfMonth = (year, month) => {
 };
 
 /**
- * Formatea una fecha a YYYY-MM-DD en hora local (sin problemas de zona horaria)
- * Para fechas de la base de datos (strings ISO), extrae directamente la parte de la fecha
- * para evitar problemas de conversión de zona horaria
+ * Formats a date to YYYY-MM-DD in local time (without timezone issues)
+ * For database dates (ISO strings), extracts the date part directly
+ * to avoid timezone conversion issues
  */
 const formatDateLocal = (date) => {
-  // Si es un string ISO (de la base de datos), extraer la fecha directamente
-  // para evitar que la conversión a hora local cambie el día
+  // If it's an ISO string (from database), extract the date directly
+  // to avoid local time conversion changing the day
   if (typeof date === 'string' && date.includes('T')) {
     return date.split('T')[0];
   }
@@ -41,9 +41,9 @@ const MONTHS = [
 ];
 
 /**
- * Componente de cuadrícula de calendario mensual
+ * Monthly calendar grid component
  */
-const CalendarGrid = ({ 
+const CalendarGrid = ({
   currentDate, 
   onDateChange, 
   matches = [], 
@@ -53,23 +53,23 @@ const CalendarGrid = ({
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // Calcular días del mes
+  // Calculate days of the month
   const calendarDays = useMemo(() => {
     const daysInMonth = getDaysInMonth(year, month);
     const firstDay = getFirstDayOfMonth(year, month);
     const days = [];
 
-    // Días del mes anterior (vacíos)
+    // Days from previous month (empty)
     for (let i = 0; i < firstDay; i++) {
       days.push({ type: 'empty', key: `empty-${i}` });
     }
 
-    // Días del mes actual
+    // Days of current month
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       const dateStr = formatDateLocal(date);
       
-      // Filtrar partidas de este día (comparando en hora local)
+      // Filter matches for this day (comparing in local time)
       const dayMatches = matches.filter(match => {
         return formatDateLocal(match.scheduledDate) === dateStr;
       });
@@ -88,7 +88,7 @@ const CalendarGrid = ({
     return days;
   }, [year, month, matches]);
 
-  // Navegación
+  // Navigation
   const goToPreviousMonth = () => {
     const newDate = new Date(year, month - 1, 1);
     onDateChange(newDate);
@@ -103,7 +103,7 @@ const CalendarGrid = ({
     onDateChange(new Date());
   };
 
-  // Verificar si una partida es próxima (en las próximas 24h)
+  // Check if a match is upcoming (in the next 24h)
   const isUpcoming = (match) => {
     const matchDate = new Date(match.scheduledDate);
     const now = new Date();
@@ -113,7 +113,7 @@ const CalendarGrid = ({
 
   return (
     <div className={styles.calendar}>
-      {/* Header con navegación */}
+      {/* Header with navigation */}
       <div className={styles.calendarHeader}>
         <Button
           variant="outline"

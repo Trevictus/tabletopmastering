@@ -1,18 +1,22 @@
 /**
- * @fileoverview Middleware de Manejo de Errores
- * @description Manejo centralizado de errores de la aplicación
+ * @fileoverview Error Handler Middleware
+ * @description Centralized application error handling
  * @module middlewares/errorHandler
  */
 
+const { createLogger } = require('../utils/logger');
+
+const logger = createLogger('ErrorHandler');
+
 /**
- * Middleware para manejar errores globales
- * @param {Error} err - Error capturado
- * @param {Object} req - Request de Express
- * @param {Object} res - Response de Express
- * @param {Function} next - Siguiente middleware
+ * Global error handling middleware
+ * @param {Error} err - Captured error
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ * @param {Function} next - Next middleware
  */
 const errorHandler = (err, req, res, next) => {
-  console.error('❌ Error:', err);
+  logger.error('Request error', err);
 
   // Error de Mongoose - CastError (ID inválido)
   if (err.name === 'CastError') {

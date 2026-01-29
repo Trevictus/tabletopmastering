@@ -1,6 +1,6 @@
 /**
- * @fileoverview Modelo de Grupo
- * @description Define el esquema de grupos con miembros, roles e invitaciones
+ * @fileoverview Group Model
+ * @description Defines the group schema with members, roles and invitations
  * @module models/Group
  * @requires mongoose
  * @requires crypto
@@ -10,12 +10,12 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 
 /**
- * Esquema de Grupo
+ * Group Schema
  * @typedef {Object} Group
- * @property {string} name - Nombre del grupo
- * @property {string} inviteCode - Código de invitación único
- * @property {ObjectId} admin - Administrador del grupo
- * @property {Array} members - Lista de miembros con roles
+ * @property {string} name - Group name
+ * @property {string} inviteCode - Unique invitation code
+ * @property {ObjectId} admin - Group administrator
+ * @property {Array} members - List of members with roles
  */
 const groupSchema = new mongoose.Schema(
   {
@@ -98,14 +98,14 @@ const groupSchema = new mongoose.Schema(
   }
 );
 
-// Virtual para contar miembros activos
+// Virtual to count active members
 groupSchema.virtual('memberCount').get(function () {
   return this.members ? this.members.length : 0;
 });
 
-// Método estático para generar código de invitación único y seguro
+// Static method to generate unique and secure invitation code
 groupSchema.statics.generateInviteCode = function () {
-  // Generar bytes aleatorios y convertir a string alfanumérico
+  // Generate random bytes and convert to alphanumeric string
   const buffer = crypto.randomBytes(6);
   let code = '';
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -117,35 +117,35 @@ groupSchema.statics.generateInviteCode = function () {
   return code;
 };
 
-// Método de instancia: verificar si un usuario es miembro
+// Instance method: check if a user is a member
 groupSchema.methods.isMember = function (userId) {
   return this.members.some((member) => member.user.equals(userId));
 };
 
-// Método de instancia: verificar si un usuario es admin
+// Instance method: check if a user is admin
 groupSchema.methods.isAdmin = function (userId) {
   return this.admin.equals(userId);
 };
 
-// Método de instancia: verificar si un usuario es admin o moderador
+// Instance method: check if a user is admin or moderator
 groupSchema.methods.isAdminOrModerator = function (userId) {
   if (this.admin.equals(userId)) return true;
   const member = this.members.find((m) => m.user.equals(userId));
   return member && (member.role === 'admin' || member.role === 'moderator');
 };
 
-// Método de instancia: obtener rol de un usuario
+// Instance method: get user role
 groupSchema.methods.getMemberRole = function (userId) {
   const member = this.members.find((m) => m.user.equals(userId));
   return member ? member.role : null;
 };
 
-// Método de instancia: verificar si puede aceptar más miembros
+// Instance method: check if can accept more members
 groupSchema.methods.canAcceptMoreMembers = function () {
   return this.members.length < this.settings.maxMembers;
 };
 
-// Middleware: agregar al admin como miembro al crear el grupo
+// Middleware: add admin as member when creating the group
 groupSchema.pre('save', function (next) {
   if (this.isNew && !this.members.some((m) => m.user.equals(this.admin))) {
     this.members.push({
@@ -156,17 +156,17 @@ groupSchema.pre('save', function (next) {
   next();
 });
 
-// Configurar virtuals en JSON y Object
+// Configure virtuals in JSON and Object
 groupSchema.set('toJSON', { virtuals: true });
 groupSchema.set('toObject', { virtuals: true });
 
-// Índices para optimizar búsquedas
-groupSchema.index({ inviteCode: 1 }, { unique: true });  // Búsqueda por código de invitación
-groupSchema.index({ admin: 1 });  // Grupos de un administrador
-groupSchema.index({ 'members.user': 1 });  // Búsqueda de grupos por miembro
-groupSchema.index({ isActive: 1, createdAt: -1 });  // Listar grupos activos ordenados
-groupSchema.index({ 'members.user': 1, isActive: 1 });  // Índice compuesto para grupos activos de usuario
-groupSchema.index({ name: 'text', description: 'text' });  // Búsqueda de texto en nombre y descripción
-groupSchema.index({ 'stats.totalMatches': -1 });  // Grupos más activos
+// Indexes to optimize searches
+groupSchema.index({ inviteCode: 1 }, { unique: true });  // Search by invitation code
+groupSchema.index({ admin: 1 });  // Groups by administrator
+groupSchema.index({ 'members.user': 1 });  // Search groups by member
+groupSchema.index({ isActive: 1, createdAt: -1 });  // List active groups ordered
+groupSchema.index({ 'members.user': 1, isActive: 1 });  // Compound index for user's active groups
+groupSchema.index({ name: 'text', description: 'text' });  // Text search in name and description
+groupSchema.index({ 'stats.totalMatches': -1 });  // Most active groups
 
 module.exports = mongoose.model('Group', groupSchema);

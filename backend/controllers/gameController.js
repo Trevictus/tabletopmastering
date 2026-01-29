@@ -1,6 +1,6 @@
 /**
- * @fileoverview Controlador de Juegos
- * @description Maneja CRUD de juegos, búsqueda en BGG y sincronización
+ * @fileoverview Game Controller
+ * @description Handles game CRUD, BGG search and synchronization
  * @module controllers/gameController
  * @requires ../services/gameService
  * @requires ../services/bggGameService
@@ -8,6 +8,9 @@
 
 const gameService = require('../services/gameService');
 const bggGameService = require('../services/bggGameService');
+const { createLogger } = require('../utils/logger');
+
+const logger = createLogger('GameController');
 
 /**
  * @desc    Buscar juegos en BoardGameGeek (sin guardar)
@@ -27,8 +30,8 @@ exports.searchBGG = async (req, res, next) => {
       warning: results.length === 0 && query ? 'No se encontraron resultados. BGG API puede estar experimentando problemas.' : null,
     });
   } catch (error) {
-    // Si BGG no está disponible, devolver error amigable
-    console.error('[Controller] Error en búsqueda BGG:', error.message);
+    // Return friendly error if BGG is unavailable
+    logger.error('BGG search error', { message: error.message });
     
     res.status(503).json({
       success: false,
@@ -150,7 +153,7 @@ exports.createGame = async (req, res, next) => {
 };
 
 /**
- * @desc    Listar juegos (personales o por grupo sin duplicados)
+ * @desc    List games (personal or by group without duplicates)
  * @route   GET /api/games
  * @access  Private
  */
@@ -158,7 +161,7 @@ exports.getGames = async (req, res, next) => {
   try {
     const { groupId, source, search, page = 1, limit = 20 } = req.query;
 
-    // Si hay groupId, verificar acceso
+    // If there's groupId, verify access
     if (groupId) {
       await bggGameService.validateGroupAccess(groupId, req.user._id);
     }
@@ -189,7 +192,7 @@ exports.getGames = async (req, res, next) => {
 };
 
 /**
- * @desc    Obtener un juego por ID
+ * @desc    Get a game by ID
  * @route   GET /api/games/:id
  * @access  Private
  */
@@ -315,7 +318,7 @@ exports.getHotGames = async (req, res, next) => {
 };
 
 /**
- * @desc    Obtener estadísticas de juegos de un grupo
+ * @desc    Get game statistics for a group
  * @route   GET /api/games/stats/:groupId
  * @access  Private
  */
@@ -323,7 +326,7 @@ exports.getGroupGameStats = async (req, res, next) => {
   try {
     const { groupId } = req.params;
 
-    // Verificar acceso al grupo
+    // Verify group access
     await bggGameService.validateGroupAccess(groupId, req.user._id);
 
     const stats = await gameService.getGroupStats(groupId);
@@ -344,7 +347,7 @@ exports.getGroupGameStats = async (req, res, next) => {
 };
 
 /**
- * @desc    Subir imagen para un juego
+ * @desc    Upload image for a game
  * @route   POST /api/games/:id/upload-image
  * @access  Private
  */
@@ -359,12 +362,12 @@ exports.uploadGameImage = async (req, res, next) => {
       });
     }
 
-    // Construir URL de la imagen
+    // Build image URL
     const protocol = req.protocol;
     const host = req.get('host');
     const imageUrl = `${protocol}://${host}/uploads/games/${req.file.filename}`;
 
-    // Actualizar el juego con la nueva imagen
+    // Update game with new image
     const updatedGame = await gameService.updateGame(
       id,
       { image: imageUrl },
@@ -381,7 +384,7 @@ exports.uploadGameImage = async (req, res, next) => {
       },
     });
   } catch (error) {
-    // Si hay error, eliminar el archivo subido
+    // If there's an error, delete the uploaded file
     if (req.file) {
       const fs = require('fs');
       const path = require('path');

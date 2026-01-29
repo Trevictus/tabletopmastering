@@ -1,6 +1,6 @@
 /**
- * @fileoverview Modelo de Partida
- * @description Define el esquema de partidas con jugadores, resultados y estadísticas
+ * @fileoverview Match Model
+ * @description Defines the match schema with players, results and statistics
  * @module models/Match
  * @requires mongoose
  */
@@ -8,14 +8,14 @@
 const mongoose = require('mongoose');
 
 /**
- * Esquema de Partida
+ * Match Schema
  * @typedef {Object} Match
- * @property {ObjectId} game - Juego de la partida
- * @property {ObjectId} group - Grupo donde se juega
- * @property {Date} scheduledDate - Fecha programada
- * @property {string} status - Estado (programada/en_curso/finalizada/cancelada)
- * @property {Array} players - Jugadores participantes
- * @property {ObjectId} winner - Ganador de la partida
+ * @property {ObjectId} game - Match game
+ * @property {ObjectId} group - Group where the match is played
+ * @property {Date} scheduledDate - Scheduled date
+ * @property {string} status - Status (programada/en_curso/finalizada/cancelada)
+ * @property {Array} players - Participating players
+ * @property {ObjectId} winner - Match winner
  */
 const matchSchema = new mongoose.Schema(
   {
@@ -76,8 +76,8 @@ const matchSchema = new mongoose.Schema(
       ref: 'User',
       validate: {
         validator: function(val) {
-          // Si hay ganador, debe ser uno de los jugadores
-          if (!val) return true; // Si no hay ganador, ok
+          // If there's a winner, they must be one of the players
+          if (!val) return true; // If no winner, ok
           return this.players.some(p => p.user.toString() === val.toString());
         },
         message: 'El ganador debe ser uno de los jugadores'
@@ -110,18 +110,18 @@ const matchSchema = new mongoose.Schema(
   }
 );
 
-// Índices para búsquedas eficientes
-matchSchema.index({ group: 1, scheduledDate: -1 });  // Partidas por grupo ordenadas por fecha
-matchSchema.index({ group: 1, status: 1, scheduledDate: -1 });  // Filtrar por grupo+estado+fecha
-matchSchema.index({ game: 1, status: 1 });  // Estadísticas por juego
-matchSchema.index({ 'players.user': 1, status: 1 });  // Partidas de un usuario por estado
-matchSchema.index({ createdBy: 1, createdAt: -1 });  // Partidas creadas por usuario
-matchSchema.index({ status: 1, scheduledDate: 1 });  // Próximas partidas programadas
-matchSchema.index({ winner: 1 }, { sparse: true });  // Consultas de ganadores (sparse para optimizar)
+// Indexes for efficient searches
+matchSchema.index({ group: 1, scheduledDate: -1 });  // Matches by group ordered by date
+matchSchema.index({ group: 1, status: 1, scheduledDate: -1 });  // Filter by group+status+date
+matchSchema.index({ game: 1, status: 1 });  // Statistics by game
+matchSchema.index({ 'players.user': 1, status: 1 });  // User matches by status
+matchSchema.index({ createdBy: 1, createdAt: -1 });  // Matches created by user
+matchSchema.index({ status: 1, scheduledDate: 1 });  // Upcoming scheduled matches
+matchSchema.index({ winner: 1 }, { sparse: true });  // Winner queries (sparse for optimization)
 
-// Validación: al menos 2 jugadores (solo en creación o cuando players está definido)
+// Validation: at least 2 players (only on creation or when players is defined)
 matchSchema.pre('save', function (next) {
-  // Solo validar si players está presente (puede no estarlo en updates parciales)
+  // Only validate if players is present (may not be on partial updates)
   if (this.players && this.players.length < 2) {
     next(new Error('Una partida debe tener al menos 2 jugadores'));
   } else {

@@ -14,11 +14,11 @@ const ToastContext = createContext(null);
 export { ToastTypes };
 
 /**
- * Hook para acceder al contexto de toasts
- * Actúa como wrapper sobre el store de Zustand para compatibilidad
+ * Hook to access toast context
+ * Acts as wrapper over Zustand store for compatibility
  */
 export const useToast = () => {
-  // Usar directamente el store de Zustand
+  // Use Zustand store directly
   const toasts = useToastStore((state) => state.toasts);
   const success = useToastStore((state) => state.success);
   const error = useToastStore((state) => state.error);
@@ -41,11 +41,11 @@ export const useToast = () => {
 };
 
 /**
- * Proveedor del contexto de toasts
- * Mantiene compatibilidad con el sistema anterior
+ * Toast context provider
+ * Maintains compatibility with the previous system
  */
 export const ToastProvider = ({ children }) => {
-  // El valor del contexto es solo un marcador para verificar el provider
+  // The context value is just a marker to verify the provider
   return (
     <ToastContext.Provider value={true}>
       {children}

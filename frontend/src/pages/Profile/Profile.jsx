@@ -28,7 +28,7 @@ const Profile = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  // Refrescar datos del usuario al montar para tener stats actualizadas
+  // Refresh user data on mount to have updated stats
   useEffect(() => {
     refreshUser();
   }, [refreshUser]);
@@ -42,7 +42,7 @@ const Profile = () => {
     await updateProfile(data);
   };
 
-  // Exportar datos del usuario (RGPD)
+  // Export user data (GDPR)
   const handleExportData = async () => {
     setIsExporting(true);
     try {
@@ -58,13 +58,13 @@ const Profile = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error al exportar datos:', error);
+      console.error('Error exporting data:', error);
     } finally {
       setIsExporting(false);
     }
   };
 
-  // Eliminar cuenta (RGPD)
+  // Delete account (GDPR)
   const handleDeleteAccount = async () => {
     if (!deletePassword) {
       setDeleteError('Introduce tu contraseña');
@@ -92,32 +92,32 @@ const Profile = () => {
   };
   const winRate = stats.matches > 0 ? Math.round((stats.wins / stats.matches) * 100) : 0;
   
-  // Destacados basados en datos reales del usuario
+  // Highlights based on real user data
   const highlights = [
-    // Logros por partidas jugadas
+    // Achievements for played matches
     stats.matches >= 1 && { icon: <GiDiceFire />, label: 'Primera partida jugada', color: '#8b4513' },
     stats.matches >= 5 && { icon: <GiPerspectiveDiceSixFacesRandom />, label: '5 partidas jugadas', color: '#8b4513' },
     stats.matches >= 10 && { icon: <GiPodium />, label: 'Jugador Veterano (10+)', color: '#6b7280' },
     stats.matches >= 25 && { icon: <GiCrown />, label: 'Leyenda (25+ partidas)', color: '#d4af37' },
     
-    // Logros por victorias
+    // Achievements for victories
     stats.wins >= 1 && { icon: <GiTrophy />, label: 'Primera victoria', color: '#10b981' },
     stats.wins >= 3 && { icon: <FiZap />, label: 'Racha ganadora (3+)', color: '#f59e0b' },
     stats.wins >= 10 && { icon: <FiStar />, label: 'Campeón (10+ victorias)', color: '#f59e0b' },
     
-    // Logros por win rate
+    // Achievements for win rate
     winRate >= 50 && stats.matches >= 5 && { icon: <FiTrendingUp />, label: 'Estratega (50%+ win rate)', color: '#10b981' },
     winRate >= 75 && stats.matches >= 10 && { icon: <GiDiamondHard />, label: 'Élite (75%+ win rate)', color: '#8b5cf6' },
     
-    // Logros por puntos
+    // Achievements for points
     stats.points >= 100 && { icon: <GiLaurelCrown />, label: '100 puntos acumulados', color: '#d4af37' },
     stats.points >= 500 && { icon: <GiRocket />, label: '500 puntos acumulados', color: '#ef4444' },
     
-    // Logros sociales
+    // Social achievements
     groups.length >= 1 && { icon: <GiTeamIdea />, label: 'Miembro de grupo', color: '#8b5cf6' },
     groups.length >= 3 && { icon: <MdGroup />, label: 'Social (3+ grupos)', color: '#3b82f6' },
     
-    // Logros de colección
+    // Collection achievements
     gamesCount >= 1 && { icon: <GiCardPlay />, label: 'Primer juego añadido', color: '#10b981' },
     gamesCount >= 5 && { icon: <GiBookCover />, label: 'Coleccionista (5+ juegos)', color: '#d4af37' },
   ].filter(Boolean);

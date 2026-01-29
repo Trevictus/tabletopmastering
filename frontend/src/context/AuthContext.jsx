@@ -11,12 +11,12 @@ import useAuthStore from '../stores/authStore';
 const AuthContext = createContext(null);
 
 /**
- * Hook personalizado para acceder al contexto de autenticación
- * Actúa como wrapper sobre el store de Zustand para compatibilidad
- * @returns {Object} Contexto de autenticación
+ * Custom hook to access authentication context
+ * Acts as wrapper over Zustand store for compatibility
+ * @returns {Object} Authentication context
  */
 export const useAuth = () => {
-  // Usar directamente el store de Zustand
+  // Use Zustand store directly
   const user = useAuthStore((state) => state.user);
   const loading = useAuthStore((state) => state.loading);
   const error = useAuthStore((state) => state.error);
@@ -28,7 +28,7 @@ export const useAuth = () => {
   const clearError = useAuthStore((state) => state.clearError);
   const refreshUser = useAuthStore((state) => state.refreshUser);
   
-  // Estado derivado
+  // Derived state
   const isAuthenticated = !!user;
   
   return {
@@ -47,21 +47,21 @@ export const useAuth = () => {
 };
 
 /**
- * Proveedor del contexto de autenticación
- * Inicializa el store y provee compatibilidad con el sistema anterior
+ * Authentication context provider
+ * Initializes the store and provides compatibility with the previous system
  */
 export const AuthProvider = ({ children }) => {
   const hasCheckedAuth = useRef(false);
   const initAuth = useAuthStore((state) => state.initAuth);
 
-  // Inicializar autenticación al montar
+  // Initialize authentication on mount
   useEffect(() => {
     if (hasCheckedAuth.current) return;
     hasCheckedAuth.current = true;
     initAuth();
   }, [initAuth]);
 
-  // El valor del contexto es solo un marcador para verificar el provider
+  // The context value is just a marker to verify the provider
   return (
     <AuthContext.Provider value={true}>
       {children}

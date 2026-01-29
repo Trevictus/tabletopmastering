@@ -11,11 +11,11 @@ import Input from '../../components/common/Input';
 import styles from './CreateGroup.module.css';
 import groupService from '../../services/groupService';
 
-// Límite máximo de grupos por usuario
+// Maximum groups per user limit
 const MAX_GROUPS = 7;
 
 /**
- * Página para crear un nuevo grupo
+ * Page to create a new group
  */
 const CreateGroup = () => {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const CreateGroup = () => {
     description: '',
   });
 
-  // Verificar límite de grupos al cargar
+  // Check group limit on load
   useEffect(() => {
     if (groups.length >= MAX_GROUPS) {
       navigate('/groups', { 
@@ -60,10 +60,10 @@ const CreateGroup = () => {
         description: formData.description.trim(),
       });
 
-      // Recargar grupos
+      // Reload groups
       await loadGroups();
 
-      // Navegar al grupo recién creado o a la lista de grupos
+      // Navigate to the newly created group or to the groups list
       const groupId = response.data?._id || response.data?.id;
       if (groupId) {
         navigate(`/groups/${groupId}`);

@@ -46,25 +46,25 @@ const {
 
 const router = express.Router();
 
-// Rutas de caché de BGG (administración)
+// BGG cache routes (administration)
 router.get('/cache/stats', protect, getCacheStats);
 router.delete('/cache/:bggId', protect, invalidateCache);
 router.delete('/cache', protect, clearCache);
 
-// Rutas de BGG (búsqueda y obtención de datos externos)
+// BGG routes (search and fetch external data)
 router.get('/search-bgg', protect, searchBGGValidation, validate, searchBGG);
 router.get('/bgg/hot', protect, hotGamesValidation, validate, getHotGames);
 router.get('/bgg/:bggId', protect, getBGGDetailsValidation, validate, getBGGDetails);
 
-// Rutas de gestión de juegos
+// Game management routes
 router.post('/add-from-bgg', protect, addFromBGGValidation, validate, addFromBGG);
 router.post('/', protect, createGameValidation, validate, createGame);
 router.get('/', protect, getGamesValidation, validate, getGames);
 
-// Rutas específicas con paths completos ANTES de las rutas con parámetros dinámicos
+// Specific routes with full paths BEFORE routes with dynamic parameters
 router.get('/stats/:groupId', protect, groupStatsValidation, validate, getGroupGameStats);
 
-// Middleware para manejar errores de multer
+// Middleware to handle multer errors
 const handleMulterError = (err, req, res, next) => {
   if (err) {
     if (err.message.includes('Tipo de archivo no válido')) {
@@ -83,7 +83,7 @@ const handleMulterError = (err, req, res, next) => {
   next(err);
 };
 
-// Rutas con parámetros dinámicos - las más específicas primero
+// Routes with dynamic parameters - most specific first
 router.post('/:id/upload-image', protect, idParamValidation, validate, upload.single('image'), handleMulterError, uploadGameImage);
 router.put('/:id/sync-bgg', protect, idParamValidation, validate, syncBGGGame);
 router.get('/:id', protect, idParamValidation, validate, getGame);

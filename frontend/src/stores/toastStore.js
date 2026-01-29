@@ -1,6 +1,6 @@
 /**
- * @fileoverview Store de Notificaciones Toast con Zustand
- * @description Sistema de notificaciones toast global
+ * @fileoverview Toast Notification Store with Zustand
+ * @description Global toast notification system
  * @module stores/toastStore
  */
 
@@ -8,7 +8,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 /**
- * Tipos de toast disponibles
+ * Available toast types
  */
 export const ToastTypes = {
   SUCCESS: 'success',
@@ -18,7 +18,7 @@ export const ToastTypes = {
 };
 
 /**
- * Duración por defecto según el tipo
+ * Default duration by type
  */
 const DEFAULT_DURATIONS = {
   [ToastTypes.SUCCESS]: 3000,
@@ -28,21 +28,21 @@ const DEFAULT_DURATIONS = {
 };
 
 /**
- * Store de toasts con Zustand
+ * Toast store with Zustand
  * 
- * Proporciona:
- * - Lista de toasts activos
- * - Métodos para añadir/remover toasts
- * - Atajos para success, error, warning, info
+ * Provides:
+ * - List of active toasts
+ * - Methods to add/remove toasts
+ * - Shortcuts for success, error, warning, info
  */
 const useToastStore = create(
   devtools(
     (set, get) => ({
-      // Estado
+      // State
       toasts: [],
 
       /**
-       * Añade un nuevo toast
+       * Adds a new toast
        */
       addToast: (toast) => {
         const id = Date.now() + Math.random();
@@ -59,7 +59,7 @@ const useToastStore = create(
 
         set((state) => ({ toasts: [...state.toasts, newToast] }));
 
-        // Auto-remover después de la duración
+        // Auto-remove after duration
         if (duration > 0) {
           setTimeout(() => {
             get().removeToast(id);
@@ -70,7 +70,7 @@ const useToastStore = create(
       },
 
       /**
-       * Remueve un toast por ID
+       * Removes a toast by ID
        */
       removeToast: (id) => {
         set((state) => ({ 

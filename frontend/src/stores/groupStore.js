@@ -1,6 +1,6 @@
 /**
- * @fileoverview Store de Grupos con Zustand
- * @description Gestión de estado global de grupos
+ * @fileoverview Group Store with Zustand
+ * @description Global state management for groups
  * @module stores/groupStore
  */
 
@@ -10,24 +10,24 @@ import groupService from '../services/groupService';
 import { STORAGE_KEYS } from '../constants/auth';
 
 /**
- * Store de grupos con Zustand
+ * Group store with Zustand
  * 
- * Proporciona:
- * - Lista de grupos del usuario
- * - Grupo seleccionado actualmente
- * - Métodos CRUD de grupos
+ * Provides:
+ * - List of user's groups
+ * - Currently selected group
+ * - Group CRUD methods
  */
 const useGroupStore = create(
   devtools(
     (set, get) => ({
-      // Estado
+      // State
       selectedGroup: null,
       groups: [],
       loading: false,
       error: null,
 
       /**
-       * Carga los grupos del usuario autenticado
+       * Loads authenticated user's groups
        */
       loadGroups: async () => {
         set({ loading: true, error: null });
@@ -36,7 +36,7 @@ const useGroupStore = create(
           const groups = response.data || [];
           set({ groups, loading: false });
           
-          // Si hay un grupo guardado en sessionStorage, intentar seleccionarlo
+          // If there's a saved group in sessionStorage, try to select it
           const savedGroupId = sessionStorage.getItem(STORAGE_KEYS.SELECTED_GROUP);
           if (savedGroupId && groups.length > 0) {
             const savedGroup = groups.find(g => g._id === savedGroupId);
@@ -47,7 +47,7 @@ const useGroupStore = create(
           
           return groups;
         } catch (err) {
-          // Solo mostrar error si no es una petición cancelada
+          // Only show error if not a canceled request
           if (err.name !== 'CanceledError') {
             set({ error: err.response?.data?.message || 'Error al cargar grupos', loading: false });
           }
@@ -56,11 +56,11 @@ const useGroupStore = create(
       },
 
       /**
-       * Selecciona un grupo como activo
+       * Selects a group as active
        */
       selectGroup: (group) => {
         set({ selectedGroup: group });
-        // Guardar en sessionStorage para persistencia en esta pestaña
+        // Save to sessionStorage for tab persistence
         if (group) {
           sessionStorage.setItem(STORAGE_KEYS.SELECTED_GROUP, group._id);
         } else {
@@ -69,7 +69,7 @@ const useGroupStore = create(
       },
 
       /**
-       * Crea un nuevo grupo
+       * Creates a new group
        */
       createGroup: async (groupData) => {
         set({ loading: true, error: null });
@@ -77,14 +77,14 @@ const useGroupStore = create(
           const response = await groupService.createGroup(groupData);
           const newGroup = response.data;
           
-          // Añadir el nuevo grupo a la lista
+          // Add new group to list
           set((state) => ({ 
             groups: [...state.groups, newGroup],
             selectedGroup: newGroup,
             loading: false 
           }));
           
-          // Guardar como grupo seleccionado
+          // Save as selected group
           if (newGroup?._id) {
             sessionStorage.setItem(STORAGE_KEYS.SELECTED_GROUP, newGroup._id);
           }
@@ -98,13 +98,13 @@ const useGroupStore = create(
       },
 
       /**
-       * Une al usuario a un grupo mediante código de invitación
+       * Joins user to a group via invite code
        */
       joinGroup: async (inviteCode) => {
         set({ loading: true, error: null });
         try {
           const response = await groupService.joinGroup(inviteCode);
-          // Recargar grupos después de unirse
+          // Reload groups after joining
           await get().loadGroups();
           set({ loading: false });
           return response;
@@ -116,7 +116,7 @@ const useGroupStore = create(
       },
 
       /**
-       * Actualiza un grupo existente
+       * Updates an existing group
        */
       updateGroup: async (groupId, groupData) => {
         set({ loading: true, error: null });
@@ -124,7 +124,7 @@ const useGroupStore = create(
           const response = await groupService.updateGroup(groupId, groupData);
           const updatedGroup = response.data;
           
-          // Actualizar el grupo en la lista
+          // Update group in list
           set((state) => ({
             groups: state.groups.map(g => g._id === groupId ? updatedGroup : g),
             selectedGroup: state.selectedGroup?._id === groupId ? updatedGroup : state.selectedGroup,
@@ -140,21 +140,21 @@ const useGroupStore = create(
       },
 
       /**
-       * Elimina un grupo
+       * Deletes a group
        */
       deleteGroup: async (groupId) => {
         set({ loading: true, error: null });
         try {
           await groupService.deleteGroup(groupId);
           
-          // Remover el grupo de la lista
+          // Remove the group from the list
           set((state) => ({
             groups: state.groups.filter(g => g._id !== groupId),
             selectedGroup: state.selectedGroup?._id === groupId ? null : state.selectedGroup,
             loading: false
           }));
           
-          // Limpiar sessionStorage si era el grupo seleccionado
+          // Clear sessionStorage if it was the selected group
           const savedGroupId = sessionStorage.getItem(STORAGE_KEYS.SELECTED_GROUP);
           if (savedGroupId === groupId) {
             sessionStorage.removeItem(STORAGE_KEYS.SELECTED_GROUP);
@@ -167,21 +167,21 @@ const useGroupStore = create(
       },
 
       /**
-       * Sale de un grupo
+       * Leaves a group
        */
       leaveGroup: async (groupId) => {
         set({ loading: true, error: null });
         try {
           await groupService.leaveGroup(groupId);
           
-          // Remover el grupo de la lista
+          // Remove the group from the list
           set((state) => ({
             groups: state.groups.filter(g => g._id !== groupId),
             selectedGroup: state.selectedGroup?._id === groupId ? null : state.selectedGroup,
             loading: false
           }));
           
-          // Limpiar sessionStorage si era el grupo seleccionado
+          // Clear sessionStorage if it was the selected group
           const savedGroupId = sessionStorage.getItem(STORAGE_KEYS.SELECTED_GROUP);
           if (savedGroupId === groupId) {
             sessionStorage.removeItem(STORAGE_KEYS.SELECTED_GROUP);
@@ -194,25 +194,25 @@ const useGroupStore = create(
       },
 
       /**
-       * Obtiene un grupo por ID
+       * Gets a group by ID
        */
       getGroupById: async (groupId) => {
         try {
           const response = await groupService.getGroupById(groupId);
           return response.data;
         } catch (err) {
-          console.error('Error obteniendo grupo:', err);
+          console.error('Error getting group:', err);
           return null;
         }
       },
 
       /**
-       * Limpia el error
+       * Clears the error
        */
       clearError: () => set({ error: null }),
 
       /**
-       * Resetea el store (útil al cerrar sesión)
+       * Resets the store (useful on logout)
        */
       reset: () => set({ 
         selectedGroup: null, 

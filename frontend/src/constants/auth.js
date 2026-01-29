@@ -1,17 +1,17 @@
 /**
- * @fileoverview Constantes de Autenticación
- * @description Claves de almacenamiento, mensajes de error y configuración de auth
+ * @fileoverview Authentication Constants
+ * @description Storage keys, error messages and auth configuration
  * @module constants/auth
  */
 
 /**
- * Constantes y configuraciones para el sistema de autenticación
+ * Constants and configurations for the authentication system
  */
 
 /**
- * Claves de sessionStorage para autenticación
- * IMPORTANTE: Usamos sessionStorage (no localStorage) para aislar sesiones por pestaña
- * Esto permite que diferentes usuarios usen diferentes pestañas del mismo navegador
+ * sessionStorage keys for authentication
+ * IMPORTANT: We use sessionStorage (not localStorage) to isolate sessions per tab
+ * This allows different users to use different tabs of the same browser
  */
 export const STORAGE_KEYS = {
   TOKEN: 'token',
@@ -20,7 +20,7 @@ export const STORAGE_KEYS = {
 };
 
 /**
- * Mensajes de error estandarizados
+ * Standardized error messages
  */
 export const AUTH_ERRORS = {
   INVALID_CREDENTIALS: 'Credenciales inválidas',
@@ -36,7 +36,7 @@ export const AUTH_ERRORS = {
 };
 
 /**
- * Mensajes de éxito
+ * Success messages
  */
 export const AUTH_SUCCESS = {
   LOGIN: 'Sesión iniciada correctamente',
@@ -46,7 +46,7 @@ export const AUTH_SUCCESS = {
 };
 
 /**
- * Rutas de autenticación
+ * Authentication routes
  */
 export const AUTH_ROUTES = {
   LOGIN: '/login',
@@ -57,15 +57,15 @@ export const AUTH_ROUTES = {
 };
 
 /**
- * Configuración de timeout para validación de token
+ * Token validation timeout configuration
  */
 export const AUTH_CONFIG = {
-  TOKEN_VALIDATION_TIMEOUT: 5000, // 5 segundos
+  TOKEN_VALIDATION_TIMEOUT: 5000, // 5 seconds
   RETRY_ATTEMPTS: 3,
 };
 
 /**
- * Roles de usuario disponibles
+ * Available user roles
  */
 export const USER_ROLES = {
   ADMIN: 'admin',

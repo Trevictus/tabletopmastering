@@ -1,6 +1,6 @@
 /**
- * @fileoverview Servicio de Juegos
- * @description Lógica de negocio para CRUD de juegos y sincronización con BGG
+ * @fileoverview Game Service
+ * @description Business logic for game CRUD and BGG synchronization
  * @module services/gameService
  * @requires ../models/Game
  * @requires ../models/Group
@@ -10,7 +10,7 @@ const Game = require('../models/Game');
 const Group = require('../models/Group');
 
 /**
- * Proyecciones para consultas de Game
+ * Projections for Game queries
  */
 const GAME_LIST_PROJECTION = {
   name: 1,
@@ -56,7 +56,7 @@ const GAME_DETAIL_PROJECTION = {
 };
 
 /**
- * Crear un juego personalizado
+ * Create a custom game
  */
 exports.createCustomGame = async (gameData, userId, groupId = null) => {
   const {
@@ -73,7 +73,7 @@ exports.createCustomGame = async (gameData, userId, groupId = null) => {
     customNotes,
   } = gameData;
 
-  // Validaciones
+  // Validations
   if (!name) {
     throw new Error('El nombre del juego es obligatorio');
   }
@@ -82,7 +82,7 @@ exports.createCustomGame = async (gameData, userId, groupId = null) => {
     throw new Error('El número de jugadores es obligatorio');
   }
 
-  // Verificar si el juego ya existe en el contexto (grupo o personal) - optimizado con lean
+  // Check if game already exists in context (group or personal) - optimized with lean
   const duplicateFilter = groupId 
     ? { name: name, group: groupId, isActive: true }
     : { name: name, addedBy: userId, group: null, isActive: true };
@@ -99,7 +99,7 @@ exports.createCustomGame = async (gameData, userId, groupId = null) => {
     };
   }
 
-  // Crear juego personalizado
+  // Create custom game
   const game = await Game.create({
     name,
     description: description || '',
@@ -118,7 +118,7 @@ exports.createCustomGame = async (gameData, userId, groupId = null) => {
     isActive: true,
   });
 
-  // Verificar que el juego se guardó correctamente y popularlo
+  // Verify game was saved correctly and populate
   const savedGame = await Game.findById(game._id)
     .populate('addedBy', 'name email')
     .populate('group', 'name');
@@ -131,11 +131,11 @@ exports.createCustomGame = async (gameData, userId, groupId = null) => {
 };
 
 /**
- * Obtener juegos (personales o por grupo sin duplicados)
- * Cuando se consulta por grupo:
- * - Obtiene los juegos personales de todos los miembros del grupo
- * - Deduplica automáticamente por nombre/bggId
- * Los juegos NO se asignan directamente a grupos, solo a usuarios
+ * Get games (personal or by group without duplicates)
+ * When querying by group:
+ * - Gets personal games from all group members
+ * - Automatically deduplicates by name/bggId
+ * Games are NOT assigned directly to groups, only to users
  */
 exports.getGames = async (userId, groupId = null, filters = {}) => {
   const { source, search, page = 1, limit = 20 } = filters;
@@ -144,7 +144,7 @@ exports.getGames = async (userId, groupId = null, filters = {}) => {
   let needsDeduplication = false;
 
   if (groupId) {
-    // Obtener solo los IDs de miembros del grupo (optimizado)
+    // Get only member IDs from the group (optimized)
     const group = await Group.findById(groupId)
       .select('members.user')
       .lean();
@@ -153,38 +153,38 @@ exports.getGames = async (userId, groupId = null, filters = {}) => {
       throw { status: 404, message: 'Grupo no encontrado' };
     }
 
-    // Obtener IDs de todos los miembros del grupo
+    // Get IDs of all group members
     const memberIds = group.members.map(m => m.user);
 
-    // Solo juegos personales de los miembros (group = null)
+    // Only personal games from members (group = null)
     filter.addedBy = { $in: memberIds };
     filter.group = null;
     needsDeduplication = true;
   } else {
-    // Juegos personales del usuario (sin grupo)
+    // User's personal games (no group)
     filter.addedBy = userId;
     filter.group = null;
   }
 
-  // Aplicar filtro de fuente si se proporciona
+  // Apply source filter if provided
   if (source && ['bgg', 'custom'].includes(source)) {
     filter.source = source;
   }
 
-  // Aplicar búsqueda si se proporciona (optimizado con índice de texto)
+  // Apply search if provided (optimized with text index)
   if (search) {
-    // Usar $text search si está disponible (más eficiente con índice)
+    // Use $text search if available (more efficient with index)
     const searchFilter = {
       $or: [
         { name: { $regex: search, $options: 'i' } },
         { categories: { $in: [new RegExp(search, 'i')] } },
       ]
     };
-    // Combinar con filtros existentes
+    // Combine with existing filters
     filter = { $and: [filter, searchFilter] };
   }
 
-  // Obtener juegos con projection y lean
+  // Get games with projection and lean
   const allGames = await Game.find(filter)
     .select(GAME_LIST_PROJECTION)
     .populate('addedBy', 'name email -_id')
@@ -192,12 +192,12 @@ exports.getGames = async (userId, groupId = null, filters = {}) => {
     .sort({ createdAt: -1 })
     .lean();
 
-  // Deduplicar si es necesario (en grupo) - por nombre normalizado para evitar duplicados
+  // Deduplicate if necessary (in group) - by normalized name to avoid duplicates
   const games = needsDeduplication
     ? this.deduplicateGamesByName(allGames)
     : allGames;
 
-  // Aplicar paginación post-deduplicación
+  // Apply pagination post-deduplication
   const skip = (parseInt(page) - 1) * parseInt(limit);
   const paginatedGames = games.slice(skip, skip + parseInt(limit));
   const total = games.length;
@@ -212,7 +212,7 @@ exports.getGames = async (userId, groupId = null, filters = {}) => {
 };
 
 /**
- * Obtener un juego por ID (optimizado)
+ * Get a game by ID (optimized)
  */
 exports.getGameById = async (gameId, userId = null) => {
   const game = await Game.findOne({ _id: gameId, isActive: true })
@@ -225,7 +225,7 @@ exports.getGameById = async (gameId, userId = null) => {
     throw { status: 404, message: 'Juego no encontrado' };
   }
 
-  // Verificar acceso si tiene grupo
+  // Verify access if it has a group
   if (game.group && userId) {
     const groupId = game.group._id || game.group;
     const group = await Group.findById(groupId)
@@ -246,7 +246,7 @@ exports.getGameById = async (gameId, userId = null) => {
 };
 
 /**
- * Actualizar un juego (optimizado)
+ * Update a game (optimized)
  */
 exports.updateGame = async (gameId, updates, userId) => {
   let game = await Game.findOne({ _id: gameId, isActive: true })
@@ -256,7 +256,7 @@ exports.updateGame = async (gameId, updates, userId) => {
     throw { status: 404, message: 'Juego no encontrado' };
   }
 
-  // Verificar permisos (solo si tiene grupo)
+  // Verify permissions (only if it has a group)
   if (game.group) {
     const group = await Group.findById(game.group)
       .select('members')
@@ -273,7 +273,7 @@ exports.updateGame = async (gameId, updates, userId) => {
       };
     }
 
-    // Solo admin puede editar, o el usuario que lo añadió
+    // Only admin can edit, or the user who added it
     if (member.role !== 'admin' && game.addedBy.toString() !== userId.toString()) {
       throw { 
         status: 403, 
@@ -282,14 +282,14 @@ exports.updateGame = async (gameId, updates, userId) => {
     }
   }
 
-  // Campos permitidos para editar según el source
+  // Allowed fields to edit based on source
   let allowedFields;
   
   if (game.source === 'bgg') {
-    // Para juegos de BGG, solo permitir editar campos personalizados
+    // For BGG games, only allow editing custom fields
     allowedFields = ['customNotes', 'difficulty', 'image'];
   } else {
-    // Para juegos custom, permitir editar todo excepto source y bggId
+    // For custom games, allow editing everything except source and bggId
     allowedFields = [
       'name', 'description', 'image', 'minPlayers', 'maxPlayers',
       'playingTime', 'minPlayTime', 'maxPlayTime', 'categories', 'mechanics',
@@ -297,7 +297,7 @@ exports.updateGame = async (gameId, updates, userId) => {
     ];
   }
 
-  // Filtrar campos permitidos
+  // Filter allowed fields
   const filteredUpdates = {};
   allowedFields.forEach(field => {
     if (updates[field] !== undefined) {
@@ -313,7 +313,7 @@ exports.updateGame = async (gameId, updates, userId) => {
     .populate('addedBy', 'name email')
     .populate('group', 'name');
 
-  // Verificar que la actualización fue exitosa
+  // Verify update was successful
   if (!game) {
     throw new Error('Error al actualizar el juego en la base de datos');
   }
@@ -322,7 +322,7 @@ exports.updateGame = async (gameId, updates, userId) => {
 };
 
 /**
- * Eliminar un juego (soft delete) - optimizado
+ * Delete a game (soft delete) - optimized
  */
 exports.deleteGame = async (gameId, userId) => {
   const game = await Game.findOne({ _id: gameId, isActive: true })
@@ -332,7 +332,7 @@ exports.deleteGame = async (gameId, userId) => {
     throw { status: 404, message: 'Juego no encontrado' };
   }
 
-  // Verificar permisos
+  // Verify permissions
   if (game.group) {
     const group = await Group.findById(game.group)
       .select('members')
@@ -349,7 +349,7 @@ exports.deleteGame = async (gameId, userId) => {
       };
     }
 
-    // Solo admin puede eliminar, o el usuario que lo añadió
+    // Only admin can delete, or the user who added it
     if (member.role !== 'admin' && game.addedBy.toString() !== userId.toString()) {
       throw { 
         status: 403, 
@@ -358,17 +358,17 @@ exports.deleteGame = async (gameId, userId) => {
     }
   }
 
-  // Soft delete usando updateOne (más eficiente)
+  // Soft delete using updateOne (more efficient)
   await Game.updateOne({ _id: gameId }, { isActive: false });
 
   return game;
 };
 
 /**
- * Obtener estadísticas de juegos de un grupo (optimizado con agregación)
+ * Get game statistics for a group (optimized with aggregation)
  */
 exports.getGroupStats = async (groupId) => {
-  // Usar agregación para obtener múltiples estadísticas en una sola query
+  // Use aggregation to get multiple statistics in a single query
   const statsAggregation = await Game.aggregate([
     { $match: { group: groupId, isActive: true } },
     {
@@ -407,7 +407,7 @@ exports.getGroupStats = async (groupId) => {
 
   const stats = statsAggregation[0];
   
-  // Procesar conteos por fuente
+  // Process counts by source
   const sourceCounts = { bgg: 0, custom: 0 };
   let totalGames = 0;
   
@@ -428,28 +428,28 @@ exports.getGroupStats = async (groupId) => {
 };
 
 /**
- * Helper: Generar identificador único para un juego
- * - Para juegos de BGG: usa bggId (más preciso)
- * - Para juegos custom: usa nombre normalizado
+ * Helper: Generate unique identifier for a game
+ * - For BGG games: uses bggId (more precise)
+ * - For custom games: uses normalized name
  */
 exports.getGameIdentifier = (game) => {
   if (game.source === 'bgg' && game.bggId) {
     return `bgg_${game.bggId}`;
   }
-  // Para juegos custom, usar nombre normalizado
+  // For custom games, use normalized name
   return `custom_${game.name.toLowerCase().trim()}`;
 };
 
 /**
- * Helper: Deduplicar juegos y recopilar todos los propietarios
- * - Usa bggId para juegos de BGG (más preciso)
- * - Usa nombre normalizado para juegos custom
- * - Prioriza juegos de BGG sobre custom (datos más completos)
- * - Recopila todos los propietarios de juegos duplicados
+ * Helper: Deduplicate games and collect all owners
+ * - Uses bggId for BGG games (more precise)
+ * - Uses normalized name for custom games
+ * - Prioritizes BGG games over custom (more complete data)
+ * - Collects all owners of duplicate games
  */
 exports.deduplicateGamesWithOwners = (games) => {
-  // Map para agrupar juegos por identificador
-  // Estructura: { identifier: { bestGame, owners: Set } }
+  // Map to group games by identifier
+  // Structure: { identifier: { bestGame, owners: Set } }
   const gameGroups = new Map();
 
   for (const game of games) {
@@ -463,13 +463,13 @@ exports.deduplicateGamesWithOwners = (games) => {
     if (gameGroups.has(identifier)) {
       const group = gameGroups.get(identifier);
       
-      // Añadir propietario si no está ya en la lista
+      // Add owner if not already in the list
       if (ownerInfo && !group.ownerIds.has(ownerInfo._id)) {
         group.ownerIds.add(ownerInfo._id);
         group.owners.push(ownerInfo);
       }
 
-      // Determinar si este juego es "mejor" que el actual
+      // Determine if this game is "better" than the current one
       const currentBest = group.bestGame;
       const shouldReplace = this.shouldReplaceGame(currentBest, game);
       
@@ -477,7 +477,7 @@ exports.deduplicateGamesWithOwners = (games) => {
         group.bestGame = game;
       }
     } else {
-      // Primer juego con este identificador
+      // First game with this identifier
       const ownerIds = new Set();
       const owners = [];
       
@@ -494,41 +494,41 @@ exports.deduplicateGamesWithOwners = (games) => {
     }
   }
 
-  // Construir resultado final con propietarios incluidos
+  // Build final result with owners included
   const result = [];
   
   for (const [, group] of gameGroups) {
-    // Convertir el juego a objeto plano para poder añadir owners
+    // Convert game to plain object to add owners
     const gameObj = group.bestGame.toObject ? group.bestGame.toObject() : { ...group.bestGame };
     
-    // Añadir array de propietarios al juego
+    // Add owners array to the game
     gameObj.owners = group.owners;
     
     result.push(gameObj);
   }
 
-  // Ordenar por fecha de creación (más recientes primero)
+  // Sort by creation date (most recent first)
   return result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 };
 
 /**
- * Helper: Determinar si un juego debe reemplazar a otro como "mejor" versión
- * Prioridad: BGG con grupo > BGG sin grupo > Custom con grupo > Custom sin grupo
+ * Helper: Determine if a game should replace another as "best" version
+ * Priority: BGG with group > BGG without group > Custom with group > Custom without group
  */
 exports.shouldReplaceGame = (current, candidate) => {
-  // Si el candidato es de BGG y el actual no, reemplazar
+  // If candidate is from BGG and current is not, replace
   if (candidate.source === 'bgg' && current.source !== 'bgg') {
     return true;
   }
   
-  // Si ambos son del mismo source, preferir el que tiene grupo
+  // If both are from the same source, prefer the one with a group
   if (candidate.source === current.source) {
     if (candidate.group && !current.group) {
       return true;
     }
   }
   
-  // Si el candidato es de BGG con grupo y el actual es BGG sin grupo
+  // If candidate is BGG with group and current is BGG without group
   if (candidate.source === 'bgg' && current.source === 'bgg') {
     if (candidate.group && !current.group) {
       return true;
@@ -539,8 +539,8 @@ exports.shouldReplaceGame = (current, candidate) => {
 };
 
 /**
- * Helper: Eliminar duplicados por nombre normalizado (legacy - mantener compatibilidad)
- * @deprecated Usar deduplicateGamesWithOwners en su lugar
+ * Helper: Remove duplicates by normalized name (legacy - maintain compatibility)
+ * @deprecated Use deduplicateGamesWithOwners instead
  */
 exports.deduplicateGamesByName = (games) => {
   return this.deduplicateGamesWithOwners(games);
