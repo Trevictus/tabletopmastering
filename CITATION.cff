@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+title: Tabletop Mastering
+message: If you use Tabletop Mastering in your work, please cite it using the following metadata
+type: software
+abstract: >-
+  Tabletop Mastering is a web platform for comprehensive management of tabletop gaming 
+  sessions and groups. It allows users to organize sessions, record results, manage groups, 
+  and consult statistics for board games. The platform integrates with BoardGameGeek, 
+  provides real-time statistics and rankings, and includes full GDPR compliance for data 
+  management. Designed for gaming clubs, associations, and friend groups who want to track 
+  their gaming history in a collaborative way.
+authors:
+  - family-names: Arana-Saborido
+    given-names: Manuel
+    alias: Aaranaa00
+  - family-names: Gomez
+    given-names: Victor
+    alias: Trevictus
+  - family-names: Arias
+    given-names: Juan-Felipe
+    alias: Juanfu224
+keywords:
+  - tabletop games
+  - board games
+  - game management
+  - statistics
+  - rankings
+  - session tracking
+  - BoardGameGeek
+  - gaming clubs
+  - GDPR
+  - web application
+  - nodejs
+  - react
+  - mongodb
+version: 1.0.0
+doi: 10.5281/zenodo.PLACEHOLDER
+date-released: '2026-01-29'
+license: MIT
+repository-code: https://github.com/Trevictus/TabletopMastering
+url: https://tabletopmastering.games

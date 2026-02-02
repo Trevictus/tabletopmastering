@@ -67,7 +67,7 @@ const Calendar = () => {
       if (err.response?.status === 404) {
         setError('El módulo de partidas aún no está disponible. Próximamente podrás gestionar tu calendario.');
       } else {
-        setError(err.response?.data?.message || 'Error al cargar las partidas');
+        setError(err.response?.data?.message || 'Failed to load matches');
       }
     } finally {
       setLoading(false);

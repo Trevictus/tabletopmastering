@@ -112,7 +112,6 @@ const authService = {
       const user = sessionStorage.getItem(STORAGE_KEYS.USER);
       return user ? JSON.parse(user) : null;
     } catch (error) {
-      console.error('Error parsing user from sessionStorage:', error);
       return null;
     }
   },

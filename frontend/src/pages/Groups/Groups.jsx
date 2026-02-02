@@ -35,7 +35,7 @@ const Groups = () => {
       try {
         await loadGroups();
       } catch {
-        setError('Error al cargar los grupos');
+        setError('Failed to load groups');
       } finally {
         setLoading(false);
       }

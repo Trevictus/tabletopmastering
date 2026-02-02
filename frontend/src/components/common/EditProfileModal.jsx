@@ -186,7 +186,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
         const compressed = await compressImage(file);
         setFormData(prev => ({ ...prev, avatar: compressed }));
       } catch {
-        setErrors(prev => ({ ...prev, avatar: 'Error al procesar la imagen' }));
+        setErrors(prev => ({ ...prev, avatar: 'Failed to process image' }));
       }
     }
   };

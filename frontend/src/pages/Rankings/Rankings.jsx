@@ -63,7 +63,7 @@ const Rankings = () => {
         })));
       }
     } catch {
-      setError('Error al cargar el ranking');
+      setError('Failed to load ranking');
       setRanking([]);
     } finally {
       setLoading(false);

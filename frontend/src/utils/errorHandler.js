@@ -16,7 +16,7 @@ const logger = new Logger('ErrorHandler');
 export const handleApiError = (error) => {
   if (error.response) {
     // Server responded with a status code outside 2xx range
-    return error.response.data?.message || 'Error en el servidor';
+    return error.response.data?.message || 'Server error';
   } else if (error.request) {
     // Request was made but no response received
     return 'No se pudo conectar con el servidor';

@@ -167,7 +167,6 @@ const useAuthStore = create(
           }
           return updatedUser;
         } catch (err) {
-          console.error('Error refreshing user:', err);
           return null;
         }
       },

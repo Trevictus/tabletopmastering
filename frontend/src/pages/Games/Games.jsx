@@ -105,7 +105,7 @@ const Games = () => {
         }
       } catch (err) {
         if (mountedRef.current) {
-          setError(err.response?.data?.message || 'Error al cargar los juegos');
+          setError(err.response?.data?.message || 'Failed to load games');
         }
       } finally {
         if (mountedRef.current) {

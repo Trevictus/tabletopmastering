@@ -71,7 +71,7 @@ const limiter = rateLimit({
   max: 100, // Max 100 requests per window per IP
   message: {
     success: false,
-    message: 'Demasiadas peticiones desde esta IP, por favor intenta de nuevo en 15 minutos',
+    message: 'Too many requests from this IP, please try again in 15 minutes',
   },
   standardHeaders: true, // Returns rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disables `X-RateLimit-*` headers
@@ -80,24 +80,24 @@ const limiter = rateLimit({
 // Apply rate limiting to all API routes
 app.use('/api', limiter);
 
-// Rate limiting más estricto para autenticación (prevención de fuerza bruta)
+// Stricter rate limiting for authentication (brute force prevention)
 const authLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hora
-  max: 10, // Máximo 10 intentos de login por hora por IP
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // Max 10 login attempts per hour per IP
   message: {
     success: false,
-    message: 'Demasiados intentos de autenticación, por favor intenta de nuevo en 1 hora',
+    message: 'Too many authentication attempts, please try again in 1 hour',
   },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// Aplicar rate limiting estricto a rutas de autenticación
+// Apply strict rate limiting to authentication routes
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
 // ============================================
-// OTROS MIDDLEWARES
+// OTHER MIDDLEWARES
 // ============================================
 
 // Middlewares globales
@@ -139,14 +139,14 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Métricas Prometheus
+// Prometheus metrics
 app.use(metricsMiddleware);
 app.get('/metrics', metricsHandler);
 
-// Servir archivos estáticos (imágenes subidas)
+// Serve static files (uploaded images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Logger solo en desarrollo
+// Logger only in development
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
@@ -155,7 +155,7 @@ if (process.env.NODE_ENV === 'development') {
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: '🎲 Bienvenido a Tabletop Mastering API',
+    message: '🎲 Welcome to Tabletop Mastering API',
     version: '1.0.0',
     endpoints: {
       auth: '/api/auth',
@@ -170,7 +170,7 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
   res.json({
     success: true,
-    message: 'Servidor funcionando correctamente',
+    message: 'Server running correctly',
     timestamp: new Date().toISOString(),
   });
 });
@@ -179,7 +179,7 @@ app.get('/health', (req, res) => {
 app.get('/api', (req, res) => {
   res.json({
     success: true,
-    message: '🎲 Bienvenido a Tabletop Mastering API',
+    message: '🎲 Welcome to Tabletop Mastering API',
     version: '1.0.0',
     endpoints: {
       auth: '/api/auth',

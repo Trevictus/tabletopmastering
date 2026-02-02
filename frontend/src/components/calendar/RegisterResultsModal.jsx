@@ -144,7 +144,7 @@ const RegisterResultsModal = ({
       await onSave(match._id, resultData);
     } catch (error) {
       console.error('Error saving results:', error);
-      setErrors({ submit: error.message || 'Error al guardar los resultados' });
+      setErrors({ submit: error.message || 'Failed to save results' });
     } finally {
       setLoading(false);
     }

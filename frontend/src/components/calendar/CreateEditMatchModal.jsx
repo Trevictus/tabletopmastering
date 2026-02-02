@@ -40,7 +40,7 @@ const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
       setGroups(response.data || []);
     } catch (err) {
       console.error('Error loading groups:', err);
-      setErrors(prev => ({ ...prev, groups: 'Error al cargar grupos' }));
+      setErrors(prev => ({ ...prev, groups: 'Failed to load groups' }));
     }
   }, []);
 
@@ -51,8 +51,7 @@ const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
       const response = await gameService.getGames(params);
       setGames(response.data || []);
     } catch (err) {
-      console.error('Error al cargar juegos:', err);
-      setErrors(prev => ({ ...prev, games: 'Error al cargar juegos' }));
+      setErrors(prev => ({ ...prev, games: 'Failed to load games' }));
     }
   }, []);
 
@@ -65,7 +64,7 @@ const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
       setGroupMembers(response.data || []);
     } catch (err) {
       console.error('Error loading members:', err);
-      setErrors(prev => ({ ...prev, members: 'Error al cargar miembros' }));
+      setErrors(prev => ({ ...prev, members: 'Failed to load members' }));
     }
   }, []);
 

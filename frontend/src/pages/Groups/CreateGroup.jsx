@@ -73,7 +73,7 @@ const CreateGroup = () => {
         });
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Error al crear el grupo');
+      setError(err.response?.data?.message || err.message || 'Failed to create group');
     } finally {
       setLoading(false);
     }

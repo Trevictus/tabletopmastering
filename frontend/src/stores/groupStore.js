@@ -49,7 +49,7 @@ const useGroupStore = create(
         } catch (err) {
           // Only show error if not a canceled request
           if (err.name !== 'CanceledError') {
-            set({ error: err.response?.data?.message || 'Error al cargar grupos', loading: false });
+            set({ error: err.response?.data?.message || 'Failed to load groups', loading: false });
           }
           return [];
         }
@@ -91,7 +91,7 @@ const useGroupStore = create(
           
           return response;
         } catch (err) {
-          const errorMessage = err.response?.data?.message || 'Error al crear grupo';
+          const errorMessage = err.response?.data?.message || 'Failed to create group';
           set({ error: errorMessage, loading: false });
           throw new Error(errorMessage);
         }
@@ -109,7 +109,7 @@ const useGroupStore = create(
           set({ loading: false });
           return response;
         } catch (err) {
-          const errorMessage = err.response?.data?.message || 'Error al unirse al grupo';
+          const errorMessage = err.response?.data?.message || 'Failed to join group';
           set({ error: errorMessage, loading: false });
           throw new Error(errorMessage);
         }
@@ -133,7 +133,7 @@ const useGroupStore = create(
           
           return response;
         } catch (err) {
-          const errorMessage = err.response?.data?.message || 'Error al actualizar grupo';
+          const errorMessage = err.response?.data?.message || 'Failed to update group';
           set({ error: errorMessage, loading: false });
           throw new Error(errorMessage);
         }
@@ -160,7 +160,7 @@ const useGroupStore = create(
             sessionStorage.removeItem(STORAGE_KEYS.SELECTED_GROUP);
           }
         } catch (err) {
-          const errorMessage = err.response?.data?.message || 'Error al eliminar grupo';
+          const errorMessage = err.response?.data?.message || 'Failed to delete group';
           set({ error: errorMessage, loading: false });
           throw new Error(errorMessage);
         }
@@ -187,7 +187,7 @@ const useGroupStore = create(
             sessionStorage.removeItem(STORAGE_KEYS.SELECTED_GROUP);
           }
         } catch (err) {
-          const errorMessage = err.response?.data?.message || 'Error al salir del grupo';
+          const errorMessage = err.response?.data?.message || 'Failed to leave group';
           set({ error: errorMessage, loading: false });
           throw new Error(errorMessage);
         }
@@ -201,7 +201,6 @@ const useGroupStore = create(
           const response = await groupService.getGroupById(groupId);
           return response.data;
         } catch (err) {
-          console.error('Error getting group:', err);
           return null;
         }
       },

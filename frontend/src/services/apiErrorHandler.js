@@ -41,7 +41,7 @@ const DEFAULT_ERROR_MESSAGES = {
   [ErrorTypes.AUTHORIZATION]: 'No tienes permisos para realizar esta acción.',
   [ErrorTypes.VALIDATION]: 'Los datos proporcionados no son válidos.',
   [ErrorTypes.NOT_FOUND]: 'El recurso solicitado no fue encontrado.',
-  [ErrorTypes.SERVER]: 'Error en el servidor. Inténtalo de nuevo más tarde.',
+  [ErrorTypes.SERVER]: 'Server error. Please try again later.',
   [ErrorTypes.TIMEOUT]: 'La petición tardó demasiado tiempo. Inténtalo de nuevo.',
   [ErrorTypes.CANCELLED]: 'La petición fue cancelada.',
   [ErrorTypes.UNKNOWN]: 'Ocurrió un error inesperado.',
@@ -198,7 +198,7 @@ export const isRetryableError = (error) => {
 };
 
 /**
- * Muestra un error en consola de forma amigable (solo en desarrollo)
+ * Displays error in console in a friendly way (only in development)
  * 
  * @param {Object} error - Error de Axios
  * @param {string} context - Contexto donde ocurrió el error

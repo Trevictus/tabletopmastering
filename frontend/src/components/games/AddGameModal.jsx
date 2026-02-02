@@ -123,7 +123,7 @@ const AddGameModal = ({ isOpen, onClose, onGameAdded, groupId }) => {
       setGamePreview(response.data);
       setMode('preview');
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al obtener detalles del juego');
+      setError(err.response?.data?.message || 'Failed to fetch game details');
     } finally {
       setLoading(false);
     }

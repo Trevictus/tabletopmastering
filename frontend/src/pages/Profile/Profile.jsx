@@ -27,6 +27,7 @@ const Profile = () => {
   const [deleteError, setDeleteError] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState('');
 
   // Refresh user data on mount to have updated stats
   useEffect(() => {
@@ -52,13 +53,13 @@ const Profile = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `tabletop-mastering-datos-${user.nickname || 'usuario'}-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `tabletop-mastering-data-${user.nickname || 'user'}-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error exporting data:', error);
+      setExportError('Failed to export data');
     } finally {
       setIsExporting(false);
     }
@@ -67,7 +68,7 @@ const Profile = () => {
   // Delete account (GDPR)
   const handleDeleteAccount = async () => {
     if (!deletePassword) {
-      setDeleteError('Introduce tu contraseña');
+      setDeleteError('Enter your password');
       return;
     }
     setIsDeleting(true);
@@ -77,7 +78,7 @@ const Profile = () => {
       logout();
       navigate('/', { replace: true });
     } catch (error) {
-      setDeleteError(error.response?.data?.message || 'Error al eliminar cuenta');
+      setDeleteError(error.response?.data?.message || 'Failed to delete account');
     } finally {
       setIsDeleting(false);
     }
