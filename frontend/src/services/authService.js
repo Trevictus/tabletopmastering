@@ -111,7 +111,7 @@ const authService = {
     try {
       const user = sessionStorage.getItem(STORAGE_KEYS.USER);
       return user ? JSON.parse(user) : null;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   },

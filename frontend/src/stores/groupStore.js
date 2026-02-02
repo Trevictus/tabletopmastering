@@ -200,7 +200,7 @@ const useGroupStore = create(
         try {
           const response = await groupService.getGroupById(groupId);
           return response.data;
-        } catch (err) {
+        } catch (_err) {
           return null;
         }
       },

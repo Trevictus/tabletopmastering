@@ -50,7 +50,7 @@ const CreateEditMatchModal = ({ isOpen, onClose, onSave, match = null }) => {
       const params = groupId ? { groupId } : {};
       const response = await gameService.getGames(params);
       setGames(response.data || []);
-    } catch (err) {
+    } catch (_err) {
       setErrors(prev => ({ ...prev, games: 'Failed to load games' }));
     }
   }, []);

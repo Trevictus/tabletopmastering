@@ -27,7 +27,7 @@ const Profile = () => {
   const [deleteError, setDeleteError] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [exportError, setExportError] = useState('');
+  const [_exportError, setExportError] = useState('');
 
   // Refresh user data on mount to have updated stats
   useEffect(() => {
@@ -58,7 +58,7 @@ const Profile = () => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    } catch (error) {
+    } catch (_error) {
       setExportError('Failed to export data');
     } finally {
       setIsExporting(false);

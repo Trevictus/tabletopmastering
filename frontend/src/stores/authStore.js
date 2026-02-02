@@ -166,7 +166,7 @@ const useAuthStore = create(
             authService.syncUserData(updatedUser);
           }
           return updatedUser;
-        } catch (err) {
+        } catch (_err) {
           return null;
         }
       },
