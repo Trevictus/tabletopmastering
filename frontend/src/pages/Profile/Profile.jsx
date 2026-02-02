@@ -58,7 +58,7 @@ const Profile = () => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    } catch (_error) {
+    } catch {
       setExportError('Failed to export data');
     } finally {
       setIsExporting(false);
