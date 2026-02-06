@@ -35,6 +35,10 @@ const matchRoutes = require('./routes/matchRoutes');
 // Create Express application
 const app = express();
 
+// Trust first proxy (nginx reverse proxy) - required for express-rate-limit
+// and correct client IP detection behind reverse proxy
+app.set('trust proxy', 1);
+
 // Initialize Sentry (v8+ API)
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
