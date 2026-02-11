@@ -24,7 +24,7 @@ const Home = () => {
         <section className={styles.hero}>
           <GiPerspectiveDiceSixFacesRandom className={styles.heroIcon} />
           <h1>Tabletop Mastering</h1>
-          <p>Organiza tus partidas, grupos y estadísticas de juegos de mesa de forma sencilla y divertida.</p>
+          <p>Organiza partidas, grupos y estadísticas de juegos de mesa de forma sencilla y divertida.</p>
         </section>
 
         {/* Features */}
