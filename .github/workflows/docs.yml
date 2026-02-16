@@ -22,7 +22,7 @@ jobs:
           find frontend/src -type f \( -name "*.js" -o -name "*.jsx" \) | xargs jsdoc -d docs/frontend-api || echo "Frontend docs generated with warnings"
       
       - name: Upload docs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: documentation
           path: docs/
